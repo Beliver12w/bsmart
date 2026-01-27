@@ -3,421 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BS MART | Store</title>
+    <title>BS MART | Online Shopping</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Smooth scrolling and animations */
-        html { scroll-behavior: smooth; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Hide scrollbar for category list */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
-<body class="bg-gray-50 font-sans min-h-screen relative pb-20">
+<body class="bg-gray-100 font-sans pb-24 select-none">
 
-    <div id="admin-panel" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center fade-in">
-        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md m-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800">Add Product</h2>
-                <button onclick="toggleElement('admin-panel')" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-times text-xl"></i></button>
-            </div>
-            
-            <form onsubmit="addProduct(event)" class="space-y-3">
-                <input type="text" id="p-name" required class="w-full border p-2 rounded" placeholder="Product Name">
-                <textarea id="p-desc" class="w-full border p-2 rounded" placeholder="Product Description (e.g. Cotton fabric, fast color)"></textarea>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <input type="number" id="p-price" required class="w-full border p-2 rounded" placeholder="Sale Price (₹)">
-                    <input type="number" id="p-old-price" class="w-full border p-2 rounded bg-gray-50" placeholder="MRP / Old Price (₹)">
-                </div>
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycby7FbnXt9tqKFK_OfuUd7dVwdSmYunenmvLJGY9yGmpHUI2NDDzPXPIYnDhfHRiP_2q/exec"; 
+        const QR_CODE_IMAGE = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=9596095592@upi&pn=BS_MART";
+    </script>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <input type="number" id="p-rating" step="0.1" max="5" class="w-full border p-2 rounded" placeholder="Rating (4.5)">
-                    <select id="p-category" class="w-full border p-2 rounded">
-                        <option value="Mens Wear">Mens Wear</option>
-                        <option value="Womens">Womens</option>
-                        <option value="Kids">Kids</option>
-                        <option value="Electronics">Electronics</option>
-                    </select>
-                </div>
+    <nav class="bg-[#232f3e] text-white sticky top-0 z-50 shadow-md">
+        <div class="relative flex justify-between items-center px-4 py-3">
+            <button class="text-xl z-10"><i class="fa-solid fa-bars"></i></button>
 
-                <div class="border-2 border-dashed border-gray-300 p-4 rounded text-center">
-                    <p class="text-sm text-gray-500 mb-2">Choose Image</p>
-                    <input type="file" id="p-image-file" accept="image/*" required class="w-full text-sm text-gray-500"/>
-                </div>
-                <button type="submit" id="add-btn" class="w-full bg-pink-600 text-white py-2 rounded font-bold hover:bg-pink-700">Upload</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="product-modal" class="fixed inset-0 bg-white z-[60] hidden overflow-y-auto fade-in">
-        <div class="max-w-md mx-auto bg-white min-h-screen shadow-2xl relative">
-            <button onclick="toggleElement('product-modal')" class="absolute top-4 left-4 z-10 bg-white/80 p-2 rounded-full shadow hover:bg-white">
-                <i class="fa-solid fa-arrow-left text-gray-700"></i>
-            </button>
-
-            <div class="h-80 bg-gray-100 flex items-center justify-center">
-                <img id="detail-img" src="" class="max-h-full max-w-full object-contain">
+            <div onclick="adminLoginTrigger()" class="absolute inset-0 flex justify-center items-center cursor-pointer z-20">
+                <span class="text-xl font-bold tracking-wider select-none">BS <span class="text-[#febd69]">MART</span></span>
             </div>
 
-            <div class="p-4 pb-24">
-                <h1 id="detail-name" class="text-xl font-bold text-gray-800"></h1>
-                
-                <div class="flex items-center gap-3 mt-2">
-                    <p id="detail-price" class="text-2xl font-bold text-pink-600"></p>
-                    <p id="detail-old-price" class="text-lg text-gray-400 line-through hidden"></p>
-                    <span id="detail-discount" class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold hidden"></span>
-                </div>
-                
-                <div class="mt-4 p-3 bg-green-50 rounded border border-green-100 flex items-center gap-2">
-                    <i class="fa-solid fa-truck-fast text-green-600"></i>
-                    <span class="text-sm text-green-700 font-medium">Free Delivery</span>
-                </div>
-
-                <div class="mt-6">
-                    <h3 class="font-bold text-gray-700 mb-2">Select Size</h3>
-                    <div class="flex gap-3" id="size-options">
-                        <label class="cursor-pointer"><input type="radio" name="size" value="S" class="peer sr-only"><span class="px-4 py-2 border rounded-full peer-checked:bg-pink-600 peer-checked:text-white peer-checked:border-pink-600">S</span></label>
-                        <label class="cursor-pointer"><input type="radio" name="size" value="M" class="peer sr-only" checked><span class="px-4 py-2 border rounded-full peer-checked:bg-pink-600 peer-checked:text-white peer-checked:border-pink-600">M</span></label>
-                        <label class="cursor-pointer"><input type="radio" name="size" value="L" class="peer sr-only"><span class="px-4 py-2 border rounded-full peer-checked:bg-pink-600 peer-checked:text-white peer-checked:border-pink-600">L</span></label>
-                        <label class="cursor-pointer"><input type="radio" name="size" value="XL" class="peer sr-only"><span class="px-4 py-2 border rounded-full peer-checked:bg-pink-600 peer-checked:text-white peer-checked:border-pink-600">XL</span></label>
-                    </div>
-                </div>
-
-                <div class="mt-6">
-                    <h3 class="font-bold text-gray-700 mb-1">Product Details</h3>
-                    <p id="detail-desc" class="text-gray-500 text-sm leading-relaxed"></p>
-                </div>
-            </div>
-
-            <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white border-t shadow-lg">
-                <button onclick="openCheckout()" class="w-full bg-pink-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-pink-700 shadow-lg shadow-pink-200">
-                    Buy Now
-                </button>
+            <div class="relative z-10">
+                <i class="fa-solid fa-cart-shopping text-xl"></i>
+                <span class="absolute -top-2 -right-2 bg-[#febd69] text-[#232f3e] text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
             </div>
         </div>
-    </div>
 
-    <div id="checkout-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[70] hidden flex items-end sm:items-center justify-center fade-in">
-        <div class="bg-white w-full sm:w-96 p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl relative">
-            <button onclick="toggleElement('checkout-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-black">
-                <i class="fa-solid fa-times text-xl"></i>
-            </button>
-            
-            <h2 class="text-xl font-bold mb-4">Checkout</h2>
-            
-            <form onsubmit="placeOrder(event)" class="space-y-4">
-                <input type="text" id="cust-name" required class="w-full border-b-2 border-gray-200 p-2 focus:border-pink-600 outline-none transition" placeholder="Full Name">
-                <input type="tel" id="cust-phone" required class="w-full border-b-2 border-gray-200 p-2 focus:border-pink-600 outline-none transition" placeholder="Phone Number">
-                <textarea id="cust-addr" required class="w-full border-b-2 border-gray-200 p-2 focus:border-pink-600 outline-none transition" placeholder="Full Address (House No, Area, City, Pin Code)"></textarea>
-                
-                <div class="mt-4">
-                    <p class="font-bold text-sm mb-2 text-gray-600">Payment Method</p>
-                    <div class="space-y-2">
-                        <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="payment" value="Cash on Delivery" checked class="text-pink-600 focus:ring-pink-500">
-                            <span class="font-medium"><i class="fa-solid fa-money-bill-wave text-green-600 mr-2"></i>Cash on Delivery</span>
-                        </label>
-                        <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="payment" value="Online Payment" class="text-pink-600 focus:ring-pink-500">
-                            <span class="font-medium"><i class="fa-brands fa-google-pay text-blue-600 mr-2"></i>Online Payment (UPI)</span>
-                        </label>
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold mt-4 hover:bg-green-700 shadow-lg shadow-green-200">
-                    <i class="fa-brands fa-whatsapp mr-2"></i> Place Order on WhatsApp
-                </button>
-            </form>
+        <div class="px-3 pb-3">
+            <div class="flex bg-white rounded-md overflow-hidden h-10">
+                <input type="text" id="search" onkeyup="searchProducts()" placeholder="Search BS MART..." class="w-full px-4 text-gray-700 outline-none text-sm">
+                <button onclick="searchProducts()" class="bg-[#febd69] w-12 flex justify-center items-center text-gray-800"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
         </div>
-    </div>
 
-    <nav class="bg-white shadow sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 onclick="secretLogin()" class="text-2xl font-bold text-pink-600 cursor-pointer select-none active:scale-95 transition">
-                BS MART
-            </h1>
-            <div class="text-[10px] text-gray-300 select-none">...</div>
-        </div>
-        <div class="bg-pink-50 py-2 overflow-x-auto no-scrollbar">
-            <div class="flex justify-start md:justify-center space-x-2 px-4 min-w-max">
-                <button onclick="filterCategory('All')" class="cat-btn bg-pink-600 text-white px-4 py-1.5 rounded-full text-sm font-medium transition shadow">All</button>
-                <button onclick="filterCategory('Mens Wear')" class="cat-btn bg-white text-gray-600 hover:text-pink-600 px-4 py-1.5 rounded-full text-sm font-medium transition border">Mens Wear</button>
-                <button onclick="filterCategory('Womens')" class="cat-btn bg-white text-gray-600 hover:text-pink-600 px-4 py-1.5 rounded-full text-sm font-medium transition border">Womens</button>
-                <button onclick="filterCategory('Kids')" class="cat-btn bg-white text-gray-600 hover:text-pink-600 px-4 py-1.5 rounded-full text-sm font-medium transition border">Kids</button>
-                <button onclick="filterCategory('Electronics')" class="cat-btn bg-white text-gray-600 hover:text-pink-600 px-4 py-1.5 rounded-full text-sm font-medium transition border">Electronics</button>
+        <div class="bg-[#37475a] py-2 overflow-x-auto no-scrollbar">
+            <div class="flex px-4 space-x-5 text-sm font-medium text-white min-w-max">
+                <span onclick="filterProducts('All')" class="cursor-pointer hover:text-[#febd69]">All</span>
+                <span onclick="filterProducts('Mens Wear')" class="cursor-pointer hover:text-[#febd69]">Men</span>
+                <span onclick="filterProducts('Womens')" class="cursor-pointer hover:text-[#febd69]">Women</span>
+                <span onclick="filterProducts('Electronics')" class="cursor-pointer hover:text-[#febd69]">Electronics</span>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 py-6">
+    <div id="main-view">
         <div id="loading" class="text-center py-20">
-            <i class="fa-solid fa-spinner fa-spin text-4xl text-pink-300"></i>
+            <i class="fa-solid fa-spinner fa-spin text-4xl text-[#232f3e]"></i>
             <p class="mt-2 text-gray-500">Loading Products...</p>
         </div>
-        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
-    </main>
+        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2 p-2"></div>
+        
+        <div class="mt-8 bg-white py-8 px-5 text-center border-t shadow-sm">
+            <h2 class="text-xl font-bold text-[#232f3e] mb-2">Why Shop at BS MART?</h2>
+            <div class="flex justify-center gap-4 text-xs text-gray-600 mb-6">
+                <div class="flex flex-col items-center"><i class="fa-solid fa-truck-fast text-2xl text-[#febd69] mb-1"></i><span>Fast Delivery</span></div>
+                <div class="flex flex-col items-center"><i class="fa-solid fa-shield-halved text-2xl text-[#febd69] mb-1"></i><span>Secure Payment</span></div>
+            </div>
+            <div class="text-left text-sm text-gray-600 space-y-2 bg-gray-50 p-4 rounded-lg">
+                <p><strong>BS MART</strong> is your premium destination for fashion and electronics.</p>
+                <p><i class="fa-solid fa-envelope text-[#febd69] mr-2"></i> Support: <a href="mailto:bhatsuheem906@gmail.com" class="text-blue-600 font-bold">bhatsuheem906@gmail.com</a></p>
+            </div>
+            <p class="text-xs text-gray-400 mt-6">© 2026 BS MART Inc.</p>
+        </div>
+    </div>
+
+    <div id="product-page" class="fixed inset-0 bg-white z-[60] hidden overflow-y-auto fade-in">
+        <div class="bg-[#232f3e] text-white p-3 flex items-center gap-3 sticky top-0 shadow">
+            <button onclick="closeProductPage()"><i class="fa-solid fa-arrow-left text-lg"></i></button>
+            <span class="font-bold truncate" id="pp-header-title">Details</span>
+        </div>
+        <div class="p-4 pb-32">
+            <div class="relative">
+                <div class="h-72 flex justify-center items-center bg-gray-50 mb-4 rounded-lg border">
+                    <img id="pp-img" src="" class="max-h-full max-w-full object-contain">
+                </div>
+                <span id="pp-badge" class="hidden absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow animate-pulse"></span>
+            </div>
+            <h1 id="pp-title" class="text-lg font-medium text-gray-800 leading-snug mb-2"></h1>
+            <div class="bg-gray-50 p-3 rounded mb-4 border border-gray-100">
+                <div class="flex items-baseline gap-2">
+                    <span id="pp-discount-text" class="text-orange-600 text-xl font-light hidden"></span>
+                    <span class="text-3xl font-bold text-gray-900">₹<span id="pp-price"></span></span>
+                </div>
+                <p id="pp-mrp-block" class="text-xs text-gray-500 mt-1 hidden">M.R.P.: <span class="line-through" id="pp-old-price"></span></p>
+            </div>
+            
+            <div id="size-section" class="mb-5">
+                <p class="font-bold text-sm mb-2 text-gray-800">Select Size</p>
+                <div class="flex gap-3">
+                    <button onclick="selectSize(this, 'S')" class="size-btn border rounded-md px-4 py-2 text-sm font-bold hover:bg-gray-100">S</button>
+                    <button onclick="selectSize(this, 'M')" class="size-btn border rounded-md px-4 py-2 text-sm font-bold hover:bg-gray-100">M</button>
+                    <button onclick="selectSize(this, 'L')" class="size-btn border rounded-md px-4 py-2 text-sm font-bold hover:bg-gray-100">L</button>
+                    <button onclick="selectSize(this, 'XL')" class="size-btn border rounded-md px-4 py-2 text-sm font-bold hover:bg-gray-100">XL</button>
+                </div>
+                <p id="size-error" class="text-red-500 text-xs mt-1 hidden font-bold">Please select a size!</p>
+            </div>
+
+            <hr class="border-gray-200 my-4">
+            
+            <div class="mb-6">
+                <h3 class="font-bold text-md mb-2">Description</h3>
+                <p id="pp-desc" class="text-sm text-gray-600 leading-relaxed"></p>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="font-bold text-md mb-3">Customer Reviews</h3>
+                <div id="pp-reviews" class="space-y-4 mb-6"></div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h4 class="font-bold text-sm mb-2">Write a Review</h4>
+                    <select id="review-stars" class="w-full border p-2 rounded text-sm mb-2 text-yellow-500 font-bold">
+                        <option value="★★★★★">★★★★★ (Excellent)</option>
+                        <option value="★★★★☆">★★★★☆ (Good)</option>
+                    </select>
+                    <textarea id="review-text" class="w-full border p-2 rounded text-sm mb-2" placeholder="Describe your experience..."></textarea>
+                    <button onclick="submitReview()" class="w-full bg-[#232f3e] text-white text-sm py-2 rounded font-bold hover:bg-black">Submit Review</button>
+                </div>
+            </div>
+
+            <div class="fixed bottom-0 left-0 right-0 bg-white p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+                <button onclick="openCheckoutFromPage()" class="w-full bg-[#ffd814] text-black py-3 rounded-full font-bold shadow-sm border border-[#fcd200] hover:bg-[#f7ca00]">Buy Now</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkout-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[70] hidden flex items-center justify-center fade-in p-4">
+        <div class="bg-white w-full max-w-sm rounded-lg p-5 relative shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h2 class="text-lg font-bold">Order Summary</h2>
+                <button onclick="toggleModal('checkout-modal')" class="text-gray-500 text-2xl">&times;</button>
+            </div>
+            <form action="https://formsubmit.co/bhatsuheem906@gmail.com" method="POST">
+                <input type="hidden" name="_next" value="https://bhatsuheem906.github.io/BS-MART/">
+                <input type="hidden" name="_subject" value="New BS MART Order">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" id="form-name" name="Product">
+                <input type="hidden" id="form-price" name="Price">
+                <input type="hidden" id="form-size" name="Size">
+                <div class="space-y-3">
+                    <input type="text" name="Name" placeholder="Full Name" required class="w-full border rounded p-2 text-sm outline-none focus:border-[#e77600]">
+                    <input type="tel" name="Mobile" placeholder="Mobile Number" required class="w-full border rounded p-2 text-sm outline-none focus:border-[#e77600]">
+                    <textarea name="Address" placeholder="Full Address" required class="w-full border rounded p-2 text-sm outline-none focus:border-[#e77600]" rows="3"></textarea>
+                    <div class="bg-gray-50 p-3 rounded border">
+                        <p class="font-bold text-xs mb-2 text-gray-700">Payment Method</p>
+                        <label class="flex items-center gap-2 mb-2 cursor-pointer">
+                            <input type="radio" name="Payment" value="COD" checked onclick="showQR(false)" class="accent-[#e77600]">
+                            <span class="text-sm">Cash on Delivery</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="Payment" value="Online" onclick="showQR(true)" class="accent-[#e77600]">
+                            <span class="text-sm">UPI / QR Code</span>
+                        </label>
+                        <div id="qr-box" class="hidden text-center mt-2 border-t pt-2">
+                            <img id="qr-img" src="" class="w-32 h-32 mx-auto border bg-white p-1">
+                            <p class="text-[10px] text-red-500 mt-1 font-bold">Scan & Pay Now</p>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-[#ffd814] border border-[#fcd200] py-3 rounded-lg font-bold mt-4 shadow hover:bg-[#f7ca00]">Place Order</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-panel" class="fixed inset-0 bg-black bg-opacity-80 z-[80] hidden flex items-center justify-center fade-in">
+        <div class="bg-white p-6 rounded w-80 max-h-[80vh] overflow-y-auto">
+            <h3 class="font-bold text-lg mb-3">Add Product</h3>
+            <p class="text-xs text-gray-500 mb-4">Adding directly to Google Sheet is recommended.</p>
+            <form onsubmit="event.preventDefault(); uploadProduct();" class="space-y-2">
+                <input type="text" id="a-name" placeholder="Product Title" class="w-full border p-2 rounded text-sm">
+                <div class="flex gap-2">
+                    <input type="number" id="a-price" placeholder="Price (₹)" class="w-full border p-2 rounded text-sm">
+                    <input type="number" id="a-old-price" placeholder="MRP (Old Price)" class="w-full border p-2 rounded text-sm bg-orange-50">
+                </div>
+                <select id="a-cat" class="w-full border p-2 rounded text-sm">
+                    <option value="Mens Wear">Mens Wear</option>
+                    <option value="Womens">Womens</option>
+                    <option value="Electronics">Electronics</option>
+                </select>
+                <textarea id="a-desc" placeholder="Product Description..." class="w-full border p-2 rounded text-sm"></textarea>
+                <p class="text-xs font-bold">Image (Upload from Phone)</p>
+                <input type="file" id="a-img" class="w-full text-xs">
+                <button type="submit" id="upload-btn" class="w-full bg-[#232f3e] text-white py-2 rounded mt-2">Add Product</button>
+                <button type="button" onclick="toggleModal('admin-panel')" class="w-full text-gray-500 mt-2 text-sm">Close</button>
+            </form>
+        </div>
+    </div>
 
     <script>
-        // ✅ YOUR WHATSAPP NUMBER
-        const YOUR_WHATSAPP_NUMBER = '919596095592'; 
+        let allProducts = [];
+        let currentProduct = null;
+        let selectedSize = null;
 
-        // ✅ YOUR API LINK
-        const API_URL = 'https://script.google.com/macros/s/AKfycby7FbnXt9tqKFK_OfuUd7dVwdSmYunenmvLJGY9yGmpHUI2NDDzPXPIYnDhfHRiP_2q/exec'; 
+        // FAKE REVIEWS POOL (Used if Sheet is empty)
+        const fakeReviews = [
+            "Amazing quality for this price! 😍|Very comfortable fabric.|Delivery was super fast.",
+            "Best purchase ever.|Fitting is perfect.|Will order again for sure.",
+            "Material is soft and durable.|Looks exactly like the photo.|Value for money 💯",
+            "Highly recommended!|Got my parcel in 3 days.|Packing was good."
+        ];
 
-        let inventory = [];
-        let currentProduct = {}; 
-        let currentDisplayList = []; 
-        let isAdmin = false;
+        fetch(API_URL).then(res => res.json()).then(data => {
+            allProducts = data;
+            document.getElementById('loading').style.display = 'none';
+            renderGrid(data);
+        });
 
-        // --- FETCH DATA ---
-        async function fetchProducts() {
-            try {
-                const res = await fetch(API_URL);
-                inventory = await res.json();
-                document.getElementById('loading').classList.add('hidden');
-                filterCategory('All'); 
-            } catch (e) { console.error(e); }
+        function getOldPrice(p) {
+            return p.Old_Price || p["Old Price"] || p.old_price || p["old price"] || p.MRP || 0;
         }
 
-        // --- SMART HELPER ---
-        function getSafeValue(item, key) {
-            return item[key] || item[key.toLowerCase()] || item[key.toUpperCase()] || item[key + ' '];
-        }
-
-        // --- RENDER GRID WITH DISCOUNT ---
-        function renderProducts(data) {
+        function renderGrid(products) {
             const grid = document.getElementById('product-grid');
-            grid.innerHTML = '';
-            
-            if(data.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">No products found.</div>';
-                return;
-            }
+            grid.innerHTML = "";
+            products.forEach(p => {
+                const name = p.Name || p.name;
+                const price = Number(p.Price || p.price);
+                const img = p.Image || p.image || "https://via.placeholder.com/150";
+                const oldPrice = Number(getOldPrice(p)); 
 
-            data.forEach((item, index) => {
-                const name = getSafeValue(item, 'Name') || 'Product';
-                const price = getSafeValue(item, 'Price') || '0';
+                let discountHTML = "";
+                let oldPriceHTML = "";
                 
-                // 1. GET OLD PRICE
-                const oldPrice = item['Old_Price'] || item['Old Price'] || ''; 
-                
-                const image = getSafeValue(item, 'Image_URL') || getSafeValue(item, 'Image-URL'); 
-                const rating = getSafeValue(item, 'Rating') || 4.5;
-
-                // 2. CALCULATE DISCOUNT
-                let discountTag = '';
-                let oldPriceDisplay = '';
-
-                if(oldPrice && Number(oldPrice) > Number(price)) {
-                    const off = Math.round(((oldPrice - price) / oldPrice) * 100);
-                    discountTag = `<span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded font-bold z-10">${off}% OFF</span>`;
-                    oldPriceDisplay = `<span class="text-xs text-gray-400 line-through">₹${oldPrice}</span>`;
+                if (oldPrice > price) {
+                    const percent = Math.floor(((oldPrice - price) / oldPrice) * 100);
+                    discountHTML = `<span class="absolute top-2 left-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">${percent}% off</span>`;
+                    oldPriceHTML = `<span class="text-xs text-gray-500 line-through">₹${oldPrice}</span>`;
                 }
 
-                // 3. ADMIN BUTTONS (Visible only if secret login used)
-                const adminButtons = isAdmin ? `
-                    <div class="absolute top-2 right-2 flex gap-2 z-20">
-                        <button onclick="event.stopPropagation(); alert('Use Google Sheet to Edit')" class="bg-blue-500 text-white w-7 h-7 rounded-full shadow hover:bg-blue-600 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button onclick="event.stopPropagation(); deleteProduct(this)" class="bg-red-500 text-white w-7 h-7 rounded-full shadow hover:bg-red-600 flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </div>
-                ` : '';
-
-                // 4. STARS
-                let stars = '';
-                for(let i=1; i<=5; i++) stars += i<=rating ? '<i class="fa-solid fa-star text-yellow-400 text-[10px]"></i>' : '<i class="fa-regular fa-star text-gray-300 text-[10px]"></i>';
-
-                // 5. CREATE CARD
                 grid.innerHTML += `
-                    <div onclick="openProductDetail(${index})" class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition cursor-pointer relative group">
-                        ${discountTag}
-                        ${adminButtons}
-                        <div class="h-40 flex items-center justify-center bg-gray-50 rounded mb-2 overflow-hidden relative">
-                            <img src="${image}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-300">
+                    <div onclick='showProductPage(${JSON.stringify(p)})' class="bg-white p-2 rounded-lg border border-gray-200 shadow-sm relative cursor-pointer hover:shadow-md">
+                        ${discountHTML}
+                        <div class="h-40 flex justify-center items-center bg-gray-50 mb-2 rounded overflow-hidden">
+                            <img src="${img}" class="h-full object-contain mix-blend-multiply">
                         </div>
-                        <h3 class="font-bold text-sm truncate text-gray-800">${name}</h3>
-                        <div class="flex items-center gap-1 mt-1 mb-2">
-                            <div class="flex">${stars}</div>
-                            <span class="text-[10px] text-gray-400">(${Math.floor(Math.random()*50)+5})</span>
+                        <h3 class="text-xs font-bold text-gray-800 line-clamp-2 h-8 leading-4 mb-1">${name}</h3>
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span class="text-sm font-bold text-gray-900">₹${price}</span>
+                            ${oldPriceHTML}
                         </div>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-pink-600 font-bold">₹${price}</span>
-                            ${oldPriceDisplay}
-                        </div>
+                        <p class="text-[10px] text-green-600 mt-1 font-bold">FREE Delivery</p>
                     </div>
                 `;
             });
         }
 
-        // --- FILTER ---
-        function filterCategory(cat) {
-            document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.className = (btn.innerText === cat) 
-                    ? "cat-btn bg-pink-600 text-white px-4 py-1.5 rounded-full text-sm font-medium transition shadow-md"
-                    : "cat-btn bg-white text-gray-600 hover:text-pink-600 px-4 py-1.5 rounded-full text-sm font-medium transition border";
+        function showProductPage(product) {
+            currentProduct = product;
+            selectedSize = null;
+            const price = Number(product.Price || product.price);
+            document.getElementById('pp-img').src = product.Image || product.image;
+            document.getElementById('pp-title').innerText = product.Name || product.name;
+            document.getElementById('pp-header-title').innerText = (product.Name || product.name).substring(0, 15) + "...";
+            document.getElementById('pp-price').innerText = price;
+            document.getElementById('pp-desc').innerText = product.Description || "High quality product.";
+
+            const oldPrice = Number(getOldPrice(product));
+            const badge = document.getElementById('pp-badge');
+            const discText = document.getElementById('pp-discount-text');
+            const mrpBlock = document.getElementById('pp-mrp-block');
+            
+            if (oldPrice > price) {
+                const percent = Math.floor(((oldPrice - price) / oldPrice) * 100);
+                badge.innerText = `${percent}% OFF`; badge.classList.remove('hidden'); 
+                discText.innerText = `-${percent}%`; discText.classList.remove('hidden');
+                document.getElementById('pp-old-price').innerText = "₹" + oldPrice; mrpBlock.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden'); discText.classList.add('hidden'); mrpBlock.classList.add('hidden');
+            }
+
+            // --- SMART REVIEWS LOGIC ---
+            // If reviews exist in sheet, use them. If not, pick a RANDOM fake one from my list.
+            const reviewsDiv = document.getElementById('pp-reviews');
+            reviewsDiv.innerHTML = "";
+            
+            let rawReviews = product.Reviews || product.reviews;
+            
+            if (!rawReviews) {
+                // AUTO-FAKE: Select random fake reviews so it doesn't look empty
+                rawReviews = fakeReviews[Math.floor(Math.random() * fakeReviews.length)];
+            }
+
+            rawReviews.split('|').forEach(r => {
+                reviewsDiv.innerHTML += `
+                    <div class="text-sm border-b pb-2">
+                        <div class="flex items-center gap-1 mb-1">
+                            <i class="fa-solid fa-user-circle text-gray-400 text-lg"></i>
+                            <span class="font-bold text-xs text-gray-700">Verified User</span>
+                        </div>
+                        <div class="text-yellow-500 text-xs">★★★★★</div>
+                        <p class="text-gray-600 text-xs mt-1">${r}</p>
+                    </div>
+                `;
             });
 
-            if (cat === 'All') {
-                currentDisplayList = inventory;
-            } else {
-                currentDisplayList = inventory.filter(i => {
-                    const itemCat = getSafeValue(i, 'Category');
-                    return itemCat && itemCat.trim() === cat;
-                });
+            document.querySelectorAll('.size-btn').forEach(b => { b.classList.remove('bg-[#fcd200]', 'border-[#e77600]', 'text-black'); });
+            document.getElementById('size-error').classList.add('hidden');
+            document.getElementById('main-view').classList.add('hidden');
+            document.getElementById('product-page').classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        // --- SUBMIT REVIEW FUNCTION ---
+        function submitReview() {
+            const text = document.getElementById('review-text').value;
+            const stars = document.getElementById('review-stars').value;
+            
+            if(!text) return alert("Please write a review first.");
+            
+            // 1. Show it to the customer immediately (Satisfaction)
+            const reviewsDiv = document.getElementById('pp-reviews');
+            reviewsDiv.innerHTML += `
+                <div class="text-sm border-b pb-2 bg-green-50 p-2 rounded">
+                    <div class="flex items-center gap-1 mb-1">
+                        <i class="fa-solid fa-check-circle text-green-600"></i>
+                        <span class="font-bold text-xs text-gray-700">You (Just Now)</span>
+                    </div>
+                    <div class="text-yellow-500 text-xs">${stars}</div>
+                    <p class="text-gray-600 text-xs mt-1">${text}</p>
+                </div>
+            `;
+            
+            document.getElementById('review-text').value = "";
+            
+            // 2. Alert the ADMIN (Simulated)
+            alert("Review Submitted! \n\nNOTE TO ADMIN: To make this review permanent, please copy it and paste it into your Google Sheet 'Reviews' column.");
+        }
+
+        function closeProductPage() {
+            document.getElementById('product-page').classList.add('hidden');
+            document.getElementById('main-view').classList.remove('hidden');
+        }
+
+        function selectSize(btn, size) {
+            selectedSize = size;
+            document.querySelectorAll('.size-btn').forEach(b => { b.classList.remove('bg-[#fcd200]', 'border-[#e77600]', 'text-black'); });
+            btn.classList.add('bg-[#fcd200]', 'border-[#e77600]', 'text-black');
+            document.getElementById('size-error').classList.add('hidden');
+        }
+
+        function openCheckoutFromPage() {
+            if (!selectedSize && (currentProduct.Category || "").includes("Wear")) {
+                document.getElementById('size-error').classList.remove('hidden'); return;
             }
-            renderProducts(currentDisplayList);
+            document.getElementById('form-name').value = currentProduct.Name || currentProduct.name;
+            document.getElementById('form-price').value = currentProduct.Price || currentProduct.price;
+            document.getElementById('form-size').value = selectedSize || "Universal";
+            toggleModal('checkout-modal');
         }
 
-        // --- OPEN PRODUCT DETAIL WITH DISCOUNT ---
-        function openProductDetail(index) {
-            const item = currentDisplayList[index]; 
-            currentProduct = item; 
+        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+        function showQR(show) { document.getElementById('qr-img').src = QR_CODE_IMAGE; document.getElementById('qr-box').classList.toggle('hidden', !show); }
+        function searchProducts() { const q = document.getElementById('search').value.toLowerCase(); renderGrid(allProducts.filter(p => (p.Name || p.name).toLowerCase().includes(q))); }
+        function filterProducts(c) { renderGrid(c === 'All' ? allProducts : allProducts.filter(p => (p.Category || p.category) === c)); }
 
-            const name = getSafeValue(item, 'Name');
-            const price = getSafeValue(item, 'Price');
-            
-            // 1. GET OLD PRICE
-            const oldPrice = item['Old_Price'] || item['Old Price'] || ''; 
-            
-            const image = getSafeValue(item, 'Image_URL') || getSafeValue(item, 'Image-URL'); 
-            const desc = getSafeValue(item, 'Description') || "High quality product. Best fabric and comfortable fit."; 
-
-            document.getElementById('detail-img').src = image;
-            document.getElementById('detail-name').innerText = name;
-            document.getElementById('detail-price').innerText = "₹" + price;
-            document.getElementById('detail-desc').innerText = desc;
-            
-            // 2. HANDLE DISCOUNT DISPLAY IN POPUP
-            const oldPriceEl = document.getElementById('detail-old-price');
-            const discountEl = document.getElementById('detail-discount');
-            
-            if(oldPrice && Number(oldPrice) > Number(price)) {
-                oldPriceEl.innerText = "₹" + oldPrice;
-                oldPriceEl.classList.remove('hidden');
-                
-                const off = Math.round(((oldPrice - price) / oldPrice) * 100);
-                discountEl.innerText = off + "% OFF";
-                discountEl.classList.remove('hidden');
-            } else {
-                oldPriceEl.classList.add('hidden');
-                discountEl.classList.add('hidden');
-            }
-
-            toggleElement('product-modal');
-        }
-
-        // --- CHECKOUT ---
-        function openCheckout() {
-            toggleElement('checkout-modal');
-        }
-
-        function placeOrder(e) {
-            e.preventDefault();
-            const name = document.getElementById('cust-name').value;
-            const phone = document.getElementById('cust-phone').value;
-            const address = document.getElementById('cust-addr').value;
-            const payment = document.querySelector('input[name="payment"]:checked').value;
-            const size = document.querySelector('input[name="size"]:checked').value;
-            
-            const prodName = getSafeValue(currentProduct, 'Name');
-            const prodPrice = getSafeValue(currentProduct, 'Price');
-
-            const message = `*NEW ORDER FROM BS MART* 🛍️%0A%0A` +
-                            `*Product:* ${prodName}%0A` +
-                            `*Price:* ₹${prodPrice}%0A` +
-                            `*Size:* ${size}%0A` +
-                            `-------------------------%0A` +
-                            `*Customer:* ${name}%0A` +
-                            `*Phone:* ${phone}%0A` +
-                            `*Address:* ${address}%0A` +
-                            `*Payment:* ${payment}%0A` +
-                            `-------------------------%0A` +
-                            `Please confirm my order!`;
-
-            window.open(`https://wa.me/${YOUR_WHATSAPP_NUMBER}?text=${message}`, '_blank');
-            toggleElement('checkout-modal');
-            toggleElement('product-modal');
-        }
-
-        // --- UTILS ---
-        function toggleElement(id) {
-            const el = document.getElementById(id);
-            el.classList.toggle('hidden');
-        }
-
-        // --- ADMIN UPLOAD & LOGIN ---
-        let clickCount = 0;
-        function secretLogin() {
-            clickCount++;
-            if (clickCount === 3) {
-                if (prompt("Admin Password:") === "admin123") {
-                    isAdmin = true;
-                    toggleElement('admin-panel');
-                    filterCategory('All'); // Refresh to show delete buttons
-                }
-                clickCount = 0;
+        let taps = 0;
+        function adminLoginTrigger() {
+            taps++;
+            if(taps === 5) {
+                if(prompt("Admin Password") === "admin123") toggleModal('admin-panel');
+                taps = 0;
             }
         }
         
-        function deleteProduct(btn) {
-            if(confirm("This removes it from screen. To delete permanently, remove row from Google Sheet.")) {
-                btn.closest('.bg-white').remove();
-            }
-        }
-
-        async function addProduct(e) {
-            e.preventDefault();
-            const btn = document.getElementById('add-btn');
-            const fileInput = document.getElementById('p-image-file');
+        function uploadProduct() {
+            const btn = document.getElementById('upload-btn');
+            const file = document.getElementById('a-img').files[0];
+            if(!file) return alert("Select Image");
+            btn.innerText = "Saving...";
             
-            if(fileInput.files.length === 0) return alert("Select an image");
-            btn.innerText = "Processing..."; btn.disabled = true;
-
-            const base64Image = await compressImage(fileInput.files[0]);
-
-            const productData = {
-                action: 'add',
-                name: document.getElementById('p-name').value,
-                price: document.getElementById('p-price').value,
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const payload = {
+                    action: "add",
+                    name: document.getElementById('a-name').value,
+                    price: document.getElementById('a-price').value,
+                    old_price: document.getElementById('a-old-price').value,
+                    category: document.getElementById('a-cat').value,
+                    image: e.target.result,
+                    description: document.getElementById('a-desc').value
+                };
                 
-                // ✅ SAVES OLD PRICE TO GOOGLE SHEET
-                old_price: document.getElementById('p-old-price').value, 
-                
-                rating: document.getElementById('p-rating').value || 4.5,
-                category: document.getElementById('p-category').value,
-                description: document.getElementById('p-desc').value || "Best quality product.", 
-                image: base64Image
+                fetch(API_URL, {
+                    method: "POST", mode: "no-cors",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(payload)
+                }).then(() => {
+                    alert("Added! (Might take a moment to appear)");
+                    location.reload();
+                });
             };
-
-            try {
-                await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(productData)});
-                alert("Saved! Refreshing..."); toggleElement('admin-panel'); e.target.reset(); setTimeout(fetchProducts, 3000);
-            } catch (err) { alert("Error uploading."); }
-            btn.innerText = "Upload"; btn.disabled = false;
+            reader.readAsDataURL(file);
         }
-
-        function compressImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (ev) => {
-                    const img = new Image(); img.src = ev.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const scale = 400 / img.width;
-                        canvas.width = 400; canvas.height = img.height * scale;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6)); 
-                    }
-                }
-            });
-        }
-
-        fetchProducts();
     </script>
 </body>
 </html>
