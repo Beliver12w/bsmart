@@ -23,8 +23,6 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby7FbnXt9tqKFK_OfuUd7dVwdSmYunenmvLJGY9yGmpHUI2NDDzPXPIYnDhfHRiP_2q/exec"; 
-        
-        // YOUR QR CODE
         const QR_CODE_IMAGE = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=bsuheem23@okhdfcbank&pn=Bhat%20Suheem";
     </script>
 
@@ -206,7 +204,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Date:</span>
-                        <span id="inv-date">25/01/2026</span>
+                        <span id="inv-date"></span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Customer:</span>
@@ -267,11 +265,34 @@
             "Material is soft and durable.|Looks exactly like the photo.|Value for money 💯"
         ];
 
-        fetch(API_URL).then(res => res.json()).then(data => {
-            allProducts = data;
-            document.getElementById('loading').style.display = 'none';
-            renderGrid(data);
-        });
+        // --- NEW CACHE LOGIC START ---
+        const CACHE_KEY = 'bs_mart_cache_v1';
+        
+        // 1. Load from Cache IMMEDIATELY if exists
+        const cachedData = localStorage.getItem(CACHE_KEY);
+        if (cachedData) {
+            try {
+                const parsed = JSON.parse(cachedData);
+                if (parsed && parsed.length > 0) {
+                    allProducts = parsed;
+                    document.getElementById('loading').style.display = 'none';
+                    renderGrid(allProducts);
+                }
+            } catch(e) { console.log("Cache Error"); }
+        }
+
+        // 2. Fetch Fresh Data in Background
+        fetch(API_URL)
+            .then(res => res.json())
+            .then(data => {
+                allProducts = data;
+                // Update Cache
+                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+                document.getElementById('loading').style.display = 'none';
+                renderGrid(data);
+            })
+            .catch(err => console.log("Network Error"));
+        // --- NEW CACHE LOGIC END ---
 
         function getOldPrice(p) {
             return p.Old_Price || p["Old Price"] || p.old_price || p["old price"] || p.MRP || 0;
@@ -387,7 +408,6 @@
             alert("Review Submitted!");
         }
 
-        // --- PAYMENT METHOD LOGIC ---
         function togglePaymentMethod(method) {
             const qrBox = document.getElementById('qr-box');
             const txnInput = document.getElementById('txn-id');
@@ -397,15 +417,14 @@
                 qrImg.src = QR_CODE_IMAGE;
                 qrBox.classList.remove('hidden');
                 txnInput.removeAttribute('disabled');
-                txnInput.setAttribute('required', 'true'); // MAKE IT MANDATORY
+                txnInput.setAttribute('required', 'true');
             } else {
                 qrBox.classList.add('hidden');
                 txnInput.setAttribute('disabled', 'true');
-                txnInput.removeAttribute('required'); // REMOVE MANDATORY
+                txnInput.removeAttribute('required');
             }
         }
 
-        // --- SUBMIT ORDER (SHOW INVOICE) ---
         function submitOrder(e) {
             e.preventDefault();
             
@@ -434,19 +453,17 @@
                 body: formData
             })
             .then(response => {
-                // SHOW INVOICE INSTEAD OF ALERT
                 showInvoice(custName, payMethod);
                 toggleModal('checkout-modal');
                 btn.innerText = "Place Order";
             })
             .catch(error => {
-                showInvoice(custName, payMethod); // Show invoice even if net is slow
+                showInvoice(custName, payMethod);
                 toggleModal('checkout-modal');
                 btn.innerText = "Place Order";
             });
         }
 
-        // --- SHOW FAKE INVOICE FUNCTION ---
         function showInvoice(name, mode) {
             document.getElementById('inv-id').innerText = "#" + Math.floor(10000 + Math.random() * 90000);
             document.getElementById('inv-date').innerText = new Date().toLocaleDateString();
@@ -455,7 +472,6 @@
             document.getElementById('inv-item').innerText = currentProduct.Name || currentProduct.name;
             document.getElementById('inv-price').innerText = "₹" + (currentProduct.Price || currentProduct.price);
             
-            // Open Invoice Modal
             toggleModal('invoice-modal');
         }
 
