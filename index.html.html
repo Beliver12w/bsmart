@@ -28,16 +28,22 @@
             <form onsubmit="addProduct(event)" class="space-y-3">
                 <input type="text" id="p-name" required class="w-full border p-2 rounded" placeholder="Product Name">
                 <textarea id="p-desc" class="w-full border p-2 rounded" placeholder="Product Description (e.g. Cotton fabric, fast color)"></textarea>
+                
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="number" id="p-price" required class="w-full border p-2 rounded" placeholder="Price (₹)">
-                    <input type="number" id="p-rating" step="0.1" max="5" class="w-full border p-2 rounded" placeholder="Rating (4.5)">
+                    <input type="number" id="p-price" required class="w-full border p-2 rounded" placeholder="Sale Price (₹)">
+                    <input type="number" id="p-old-price" class="w-full border p-2 rounded bg-gray-50" placeholder="MRP / Old Price (₹)">
                 </div>
-                <select id="p-category" class="w-full border p-2 rounded">
-                    <option value="Mens Wear">Mens Wear</option>
-                    <option value="Womens">Womens</option>
-                    <option value="Kids">Kids</option>
-                    <option value="Electronics">Electronics</option>
-                </select>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" id="p-rating" step="0.1" max="5" class="w-full border p-2 rounded" placeholder="Rating (4.5)">
+                    <select id="p-category" class="w-full border p-2 rounded">
+                        <option value="Mens Wear">Mens Wear</option>
+                        <option value="Womens">Womens</option>
+                        <option value="Kids">Kids</option>
+                        <option value="Electronics">Electronics</option>
+                    </select>
+                </div>
+
                 <div class="border-2 border-dashed border-gray-300 p-4 rounded text-center">
                     <p class="text-sm text-gray-500 mb-2">Choose Image</p>
                     <input type="file" id="p-image-file" accept="image/*" required class="w-full text-sm text-gray-500"/>
@@ -59,7 +65,12 @@
 
             <div class="p-4 pb-24">
                 <h1 id="detail-name" class="text-xl font-bold text-gray-800"></h1>
-                <p id="detail-price" class="text-2xl font-bold text-pink-600 mt-2"></p>
+                
+                <div class="flex items-center gap-3 mt-2">
+                    <p id="detail-price" class="text-2xl font-bold text-pink-600"></p>
+                    <p id="detail-old-price" class="text-lg text-gray-400 line-through hidden"></p>
+                    <span id="detail-discount" class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold hidden"></span>
+                </div>
                 
                 <div class="mt-4 p-3 bg-green-50 rounded border border-green-100 flex items-center gap-2">
                     <i class="fa-solid fa-truck-fast text-green-600"></i>
@@ -151,14 +162,16 @@
     </main>
 
     <script>
-        // ✅ YOUR WHATSAPP NUMBER (Connected)
+        // ✅ YOUR WHATSAPP NUMBER
         const YOUR_WHATSAPP_NUMBER = '919596095592'; 
 
-        // ✅ YOUR API LINK (Connected)
+        // ✅ YOUR API LINK
         const API_URL = 'https://script.google.com/macros/s/AKfycby7FbnXt9tqKFK_OfuUd7dVwdSmYunenmvLJGY9yGmpHUI2NDDzPXPIYnDhfHRiP_2q/exec'; 
 
         let inventory = [];
         let currentProduct = {}; 
+        let currentDisplayList = []; 
+        let isAdmin = false;
 
         // --- FETCH DATA ---
         async function fetchProducts() {
@@ -175,7 +188,7 @@
             return item[key] || item[key.toLowerCase()] || item[key.toUpperCase()] || item[key + ' '];
         }
 
-        // --- RENDER GRID ---
+        // --- RENDER GRID WITH DISCOUNT ---
         function renderProducts(data) {
             const grid = document.getElementById('product-grid');
             grid.innerHTML = '';
@@ -188,35 +201,58 @@
             data.forEach((item, index) => {
                 const name = getSafeValue(item, 'Name') || 'Product';
                 const price = getSafeValue(item, 'Price') || '0';
+                
+                // 1. GET OLD PRICE
+                const oldPrice = item['Old_Price'] || item['Old Price'] || ''; 
+                
                 const image = getSafeValue(item, 'Image_URL') || getSafeValue(item, 'Image-URL'); 
                 const rating = getSafeValue(item, 'Rating') || 4.5;
 
-                // Create stars
+                // 2. CALCULATE DISCOUNT
+                let discountTag = '';
+                let oldPriceDisplay = '';
+
+                if(oldPrice && Number(oldPrice) > Number(price)) {
+                    const off = Math.round(((oldPrice - price) / oldPrice) * 100);
+                    discountTag = `<span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded font-bold z-10">${off}% OFF</span>`;
+                    oldPriceDisplay = `<span class="text-xs text-gray-400 line-through">₹${oldPrice}</span>`;
+                }
+
+                // 3. ADMIN BUTTONS (Visible only if secret login used)
+                const adminButtons = isAdmin ? `
+                    <div class="absolute top-2 right-2 flex gap-2 z-20">
+                        <button onclick="event.stopPropagation(); alert('Use Google Sheet to Edit')" class="bg-blue-500 text-white w-7 h-7 rounded-full shadow hover:bg-blue-600 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="event.stopPropagation(); deleteProduct(this)" class="bg-red-500 text-white w-7 h-7 rounded-full shadow hover:bg-red-600 flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                ` : '';
+
+                // 4. STARS
                 let stars = '';
                 for(let i=1; i<=5; i++) stars += i<=rating ? '<i class="fa-solid fa-star text-yellow-400 text-[10px]"></i>' : '<i class="fa-regular fa-star text-gray-300 text-[10px]"></i>';
 
+                // 5. CREATE CARD
                 grid.innerHTML += `
-                    <div onclick="openProductDetail(${index})" class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition cursor-pointer">
+                    <div onclick="openProductDetail(${index})" class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition cursor-pointer relative group">
+                        ${discountTag}
+                        ${adminButtons}
                         <div class="h-40 flex items-center justify-center bg-gray-50 rounded mb-2 overflow-hidden relative">
-                            <img src="${image}" class="max-h-full max-w-full object-contain">
+                            <img src="${image}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-300">
                         </div>
                         <h3 class="font-bold text-sm truncate text-gray-800">${name}</h3>
                         <div class="flex items-center gap-1 mt-1 mb-2">
                             <div class="flex">${stars}</div>
-                            <span class="text-[10px] text-gray-400">(${Math.floor(Math.random()*50)+5} reviews)</span>
+                            <span class="text-[10px] text-gray-400">(${Math.floor(Math.random()*50)+5})</span>
                         </div>
-                        <div class="flex items-center justify-between mt-1">
+                        <div class="flex items-center gap-2 mt-1">
                             <span class="text-pink-600 font-bold">₹${price}</span>
-                            <span class="text-xs text-gray-400">Free Delivery</span>
+                            ${oldPriceDisplay}
                         </div>
                     </div>
                 `;
             });
         }
 
-        // --- PRODUCT DETAIL LOGIC ---
-        let currentDisplayList = []; 
-
+        // --- FILTER ---
         function filterCategory(cat) {
             document.querySelectorAll('.cat-btn').forEach(btn => {
                 btn.className = (btn.innerText === cat) 
@@ -235,31 +271,51 @@
             renderProducts(currentDisplayList);
         }
 
+        // --- OPEN PRODUCT DETAIL WITH DISCOUNT ---
         function openProductDetail(index) {
             const item = currentDisplayList[index]; 
             currentProduct = item; 
 
             const name = getSafeValue(item, 'Name');
             const price = getSafeValue(item, 'Price');
+            
+            // 1. GET OLD PRICE
+            const oldPrice = item['Old_Price'] || item['Old Price'] || ''; 
+            
             const image = getSafeValue(item, 'Image_URL') || getSafeValue(item, 'Image-URL'); 
-            const desc = getSafeValue(item, 'Description') || "High quality product. Best fabric and comfortable fit. Easy returns available if issues found."; 
+            const desc = getSafeValue(item, 'Description') || "High quality product. Best fabric and comfortable fit."; 
 
             document.getElementById('detail-img').src = image;
             document.getElementById('detail-name').innerText = name;
             document.getElementById('detail-price').innerText = "₹" + price;
             document.getElementById('detail-desc').innerText = desc;
+            
+            // 2. HANDLE DISCOUNT DISPLAY IN POPUP
+            const oldPriceEl = document.getElementById('detail-old-price');
+            const discountEl = document.getElementById('detail-discount');
+            
+            if(oldPrice && Number(oldPrice) > Number(price)) {
+                oldPriceEl.innerText = "₹" + oldPrice;
+                oldPriceEl.classList.remove('hidden');
+                
+                const off = Math.round(((oldPrice - price) / oldPrice) * 100);
+                discountEl.innerText = off + "% OFF";
+                discountEl.classList.remove('hidden');
+            } else {
+                oldPriceEl.classList.add('hidden');
+                discountEl.classList.add('hidden');
+            }
 
             toggleElement('product-modal');
         }
 
-        // --- CHECKOUT & WHATSAPP LOGIC ---
+        // --- CHECKOUT ---
         function openCheckout() {
             toggleElement('checkout-modal');
         }
 
         function placeOrder(e) {
             e.preventDefault();
-            
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
             const address = document.getElementById('cust-addr').value;
@@ -269,7 +325,6 @@
             const prodName = getSafeValue(currentProduct, 'Name');
             const prodPrice = getSafeValue(currentProduct, 'Price');
 
-            // Construct WhatsApp Message
             const message = `*NEW ORDER FROM BS MART* 🛍️%0A%0A` +
                             `*Product:* ${prodName}%0A` +
                             `*Price:* ₹${prodPrice}%0A` +
@@ -282,10 +337,7 @@
                             `-------------------------%0A` +
                             `Please confirm my order!`;
 
-            // Open WhatsApp
-            const url = `https://wa.me/${YOUR_WHATSAPP_NUMBER}?text=${message}`;
-            window.open(url, '_blank');
-
+            window.open(`https://wa.me/${YOUR_WHATSAPP_NUMBER}?text=${message}`, '_blank');
             toggleElement('checkout-modal');
             toggleElement('product-modal');
         }
@@ -296,13 +348,23 @@
             el.classList.toggle('hidden');
         }
 
-        // --- ADMIN UPLOAD ---
+        // --- ADMIN UPLOAD & LOGIN ---
         let clickCount = 0;
         function secretLogin() {
             clickCount++;
             if (clickCount === 3) {
-                if (prompt("Admin Password:") === "admin123") toggleElement('admin-panel');
+                if (prompt("Admin Password:") === "admin123") {
+                    isAdmin = true;
+                    toggleElement('admin-panel');
+                    filterCategory('All'); // Refresh to show delete buttons
+                }
                 clickCount = 0;
+            }
+        }
+        
+        function deleteProduct(btn) {
+            if(confirm("This removes it from screen. To delete permanently, remove row from Google Sheet.")) {
+                btn.closest('.bg-white').remove();
             }
         }
 
@@ -320,6 +382,10 @@
                 action: 'add',
                 name: document.getElementById('p-name').value,
                 price: document.getElementById('p-price').value,
+                
+                // ✅ SAVES OLD PRICE TO GOOGLE SHEET
+                old_price: document.getElementById('p-old-price').value, 
+                
                 rating: document.getElementById('p-rating').value || 4.5,
                 category: document.getElementById('p-category').value,
                 description: document.getElementById('p-desc').value || "Best quality product.", 
