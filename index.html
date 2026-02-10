@@ -133,7 +133,8 @@
                 <i class="fa-regular fa-heart text-lg"></i>
                 <span class="text-[10px] font-medium">Saved</span>
             </button>
-            <div class="w-12"></div> <button onclick="openSupport()" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition">
+            <div class="w-12"></div>
+            <button onclick="openSupport()" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition">
                 <i class="fa-brands fa-whatsapp text-lg"></i>
                 <span class="text-[10px] font-medium">Chat</span>
             </button>
@@ -336,14 +337,27 @@
             setInterval(() => { slideIdx = (slideIdx + 1) % slides.length; document.getElementById('slider-img').src = slides[slideIdx]; }, 3500);
         };
 
-        // AUTH
+        // LOGIN WITH EMAIL NOTIFICATION
         function doLogin() {
             const name = document.getElementById('login-name').value;
             const phone = document.getElementById('login-phone').value;
             if(name.length<3 || phone.length<10) return showToast("Enter valid details");
-            localStorage.setItem('bs_user', name); localStorage.setItem('bs_phone', phone);
+            
+            // Save Local
+            localStorage.setItem('bs_user', name); 
+            localStorage.setItem('bs_phone', phone);
+            
+            // EMAIL NOTIFICATION
+            const fd = new FormData();
+            fd.append("_captcha", "false");
+            fd.append("_subject", "New User Login: " + name);
+            fd.append("Customer Name", name);
+            fd.append("Phone Number", phone);
+            fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd }).catch(e => console.log(e));
+
             showWebsite(name);
         }
+
         function showWebsite(name) {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('website').classList.remove('hidden');
@@ -440,8 +454,11 @@
         function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('hidden'); }
         function toggleQR(show) { 
             const box = document.getElementById('qr-box');
-            if(show) { document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=${UPI_ID}&pn=${UPI_NAME}&am=${document.getElementById('total-price').innerText}&cu=INR`; box.classList.remove('hidden'); }
-            else { box.classList.add('hidden'); }
+            if(show) {
+                const total = document.getElementById('total-price').innerText;
+                document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=${UPI_ID}&pn=${UPI_NAME}&am=${total}&cu=INR`;
+                box.classList.remove('hidden');
+            } else { box.classList.add('hidden'); }
         }
 
         function placeOrder() {
@@ -482,7 +499,7 @@
         function toggleAccount() { document.getElementById('account-sidebar').classList.add('hidden'); }
         function openSupport() { window.open("https://wa.me/919999999999", "_blank"); }
         function showToast(msg) { const t = document.getElementById("toast"); t.className = "toast show"; t.innerText = msg; setTimeout(() => t.className = t.className.replace("show", ""), 3000); }
-        let taps = 0; function adminTrigger() { taps++; if(taps===5) { if(prompt("Pass")==="admin123") document.getElementById('admin-panel').classList.remove('hidden'); taps=0; } }
+        let taps = 0; function adminTrigger() { taps++; if(taps === 5) { if(prompt("Pass") === "admin123") document.getElementById('admin-panel').classList.remove('hidden'); taps = 0; } }
         function uploadProduct() {
             const btn = document.getElementById('upload-btn'); const file = document.getElementById('a-file').files[0];
             if(!file) return alert("Image Required"); btn.innerText = "Saving...";
