@@ -7,16 +7,33 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
+        .fade-in { animation: fadeIn 0.2s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Amazon Button Styles */
+        .btn-amazon-primary {
+            background: linear-gradient(to bottom, #f7dfa5, #f0c14b);
+            border: 1px solid #a88734;
+            color: #111;
+        }
+        .btn-amazon-primary:hover { background: #f0c14b; }
+        
+        .btn-amazon-secondary {
+            background: #e7e9ec;
+            border: 1px solid #adb1b8;
+            color: #111;
+        }
+
         .receipt-tear {
             background-image: linear-gradient(135deg, white 50%, transparent 50%), linear-gradient(45deg, white 50%, transparent 50%);
-            background-position: bottom;
-            background-size: 20px 20px;
-            background-repeat: repeat-x;
+            background-position: bottom; background-size: 20px 20px; background-repeat: repeat-x;
         }
     </style>
 </head>
@@ -24,38 +41,47 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby7FbnXt9tqKFK_OfuUd7dVwdSmYunenmvLJGY9yGmpHUI2NDDzPXPIYnDhfHRiP_2q/exec"; 
-        
-        // YOUR QR CODE
         const QR_CODE_IMAGE = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=bsuheem23@okhdfcbank&pn=Bhat%20Suheem";
     </script>
 
-    <nav class="bg-[#232f3e] text-white sticky top-0 z-50 shadow-md">
-        <div class="relative flex justify-between items-center px-4 py-3">
-            <button class="text-xl z-10"><i class="fa-solid fa-bars"></i></button>
-
-            <div onclick="adminLoginTrigger()" class="absolute inset-0 flex justify-center items-center cursor-pointer z-20">
-                <span class="text-xl font-bold tracking-wider select-none">BS <span class="text-[#febd69]">MART</span></span>
+    <nav class="bg-[#131921] text-white sticky top-0 z-50 shadow-md">
+        <div class="flex justify-between items-center px-4 py-2">
+            
+            <div class="flex items-center gap-3">
+                <button class="text-2xl"><i class="fa-solid fa-bars"></i></button>
+                <div class="leading-none pt-2" onclick="adminLoginTrigger()">
+                    <span class="text-xl font-bold tracking-tighter">BS <span class="text-[#febd69]">MART</span></span>
+                    <span class="text-[10px] block text-gray-300 -mt-1">.in</span>
+                </div>
             </div>
 
-            <div class="relative z-10">
-                <i class="fa-solid fa-cart-shopping text-xl"></i>
-                <span class="absolute -top-2 -right-2 bg-[#febd69] text-[#232f3e] text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+            <div class="flex items-center gap-4">
+                <div onclick="handleProfileClick()" class="cursor-pointer">
+                    <div class="text-[10px] text-gray-300 leading-none">Hello, <span id="nav-user-name">Sign in</span></div>
+                    <div class="text-sm font-bold leading-none">Account & Lists</div>
+                </div>
+
+                <div onclick="toggleCart()" class="relative cursor-pointer">
+                    <i class="fa-solid fa-cart-shopping text-3xl"></i>
+                    <span id="cart-count" class="absolute -top-1 left-3 bg-[#febd69] text-[#131921] text-[12px] font-bold px-1.5 rounded-full">0</span>
+                    <span class="text-xs font-bold self-end mt-2 hidden md:inline">Cart</span>
+                </div>
             </div>
         </div>
 
         <div class="px-3 pb-3">
-            <div class="flex bg-white rounded-md overflow-hidden h-10">
+            <div class="flex bg-white rounded-md overflow-hidden h-10 shadow-sm">
                 <input type="text" id="search" onkeyup="searchProducts()" placeholder="Search BS MART..." class="w-full px-4 text-gray-700 outline-none text-sm">
-                <button onclick="searchProducts()" class="bg-[#febd69] w-12 flex justify-center items-center text-gray-800"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button onclick="searchProducts()" class="bg-[#febd69] w-12 flex justify-center items-center text-[#131921] text-lg hover:bg-[#f3a847]"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
         </div>
 
-        <div class="bg-[#37475a] py-2 overflow-x-auto no-scrollbar">
+        <div class="bg-[#232f3e] py-2 overflow-x-auto no-scrollbar">
             <div class="flex px-4 space-x-5 text-sm font-medium text-white min-w-max">
-                <span onclick="filterProducts('All')" class="cursor-pointer hover:text-[#febd69]">All</span>
-                <span onclick="filterProducts('Mens Wear')" class="cursor-pointer hover:text-[#febd69]">Men</span>
-                <span onclick="filterProducts('Womens')" class="cursor-pointer hover:text-[#febd69]">Women</span>
-                <span onclick="filterProducts('Electronics')" class="cursor-pointer hover:text-[#febd69]">Electronics</span>
+                <span onclick="filterProducts('All')" class="cursor-pointer hover:underline border-white">All</span>
+                <span onclick="filterProducts('Mens Wear')" class="cursor-pointer hover:underline">Men's Fashion</span>
+                <span onclick="filterProducts('Womens')" class="cursor-pointer hover:underline">Women's Fashion</span>
+                <span onclick="filterProducts('Electronics')" class="cursor-pointer hover:underline">Electronics</span>
             </div>
         </div>
     </nav>
@@ -65,30 +91,89 @@
             <i class="fa-solid fa-spinner fa-spin text-4xl text-[#232f3e]"></i>
             <p class="mt-2 text-gray-500">Loading Products...</p>
         </div>
-        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2 p-2"></div>
-        
-        <div class="mt-8 bg-white py-8 px-5 text-center border-t shadow-sm">
-            <h2 class="text-xl font-bold text-[#232f3e] mb-2">Why Shop at BS MART?</h2>
+        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2 p-2 bg-gray-100"></div>
+    </div>
+
+    <div id="auth-modal" class="fixed inset-0 bg-white z-[90] hidden overflow-y-auto fade-in">
+        <div class="min-h-screen bg-white flex flex-col items-center pt-8 px-4">
             
-            <div class="flex justify-center gap-4 text-xs text-gray-600 mb-6">
-                <div class="flex flex-col items-center"><i class="fa-solid fa-truck-fast text-2xl text-[#febd69] mb-1"></i><span>Fast Delivery</span></div>
-                <div class="flex flex-col items-center"><i class="fa-solid fa-shield-halved text-2xl text-[#febd69] mb-1"></i><span>Secure Payment</span></div>
+            <div class="mb-6 text-center">
+                <span class="text-3xl font-bold tracking-tighter">BS <span class="text-[#febd69]">MART</span></span>
+                <span class="text-xs text-gray-500 block">.in</span>
             </div>
 
-            <div class="text-left text-sm text-gray-600 space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                <p><strong>BS MART</strong> is your premium destination for fashion and electronics. We bring you the latest trends at the most affordable prices with a seamless shopping experience.</p>
-                <div class="mt-3 pt-3 border-t border-gray-200">
-                    <p class="font-bold text-[#232f3e] mb-1">Need Help?</p>
-                    <p><i class="fa-solid fa-envelope text-[#febd69] mr-2"></i> <a href="mailto:suheemsuheem752@gmail.com" class="text-blue-600 font-bold hover:underline">suheemsuheem752@gmail.com</a></p>
+            <div id="login-box" class="w-full max-w-sm border border-gray-300 rounded p-6 shadow-sm bg-white">
+                <h2 class="text-2xl font-normal mb-4">Sign in</h2>
+                
+                <label class="block text-xs font-bold mb-1">Mobile number</label>
+                <div class="flex border rounded mb-3 focus-within:ring-2 focus-within:ring-[#e77600] overflow-hidden">
+                    <span class="bg-gray-50 p-2 text-gray-600 border-r text-sm flex items-center">+91</span>
+                    <input type="tel" id="login-phone" class="w-full p-2 outline-none text-sm">
+                </div>
+
+                <div id="recaptcha-container"></div> <button onclick="triggerLoginOTP()" class="btn-amazon-primary w-full py-2 rounded-sm text-sm shadow-sm">Continue</button>
+
+                <p class="text-[11px] mt-4 text-gray-600 leading-tight">
+                    By continuing, you agree to BS Mart's <span class="text-blue-700 cursor-pointer hover:underline">Conditions of Use</span> and <span class="text-blue-700 cursor-pointer hover:underline">Privacy Notice</span>.
+                </p>
+
+                <div class="mt-4 relative text-center">
+                    <hr class="border-gray-200">
+                    <span class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-2 text-xs text-gray-500">New to BS Mart?</span>
+                </div>
+
+                <button onclick="switchAuthMode('signup')" class="btn-amazon-secondary w-full py-2 rounded-sm text-sm mt-4 shadow-sm">Create your BS Mart account</button>
+            </div>
+
+            <div id="signup-box" class="w-full max-w-sm border border-gray-300 rounded p-6 shadow-sm bg-white hidden">
+                <h2 class="text-2xl font-normal mb-4">Create Account</h2>
+                
+                <label class="block text-xs font-bold mb-1">Your name</label>
+                <input type="text" id="signup-name" placeholder="First and last name" class="w-full border rounded p-2 mb-3 text-sm focus:ring-2 focus:ring-[#e77600] outline-none">
+
+                <label class="block text-xs font-bold mb-1">Mobile number</label>
+                <div class="flex border rounded mb-3 focus-within:ring-2 focus-within:ring-[#e77600] overflow-hidden">
+                    <span class="bg-gray-50 p-2 text-gray-600 border-r text-sm flex items-center">+91</span>
+                    <input type="tel" id="signup-phone" class="w-full p-2 outline-none text-sm">
+                </div>
+
+                <p class="text-[11px] text-gray-600 mb-4">
+                    To verify your number, we will send you a text message with a temporary code (OTP).
+                </p>
+
+                <button onclick="triggerSignupOTP()" class="btn-amazon-primary w-full py-2 rounded-sm text-sm shadow-sm">Verify mobile number</button>
+
+                <div class="mt-4 pt-4 border-t">
+                    <p class="text-sm">Already have an account? <span onclick="switchAuthMode('login')" class="text-blue-700 cursor-pointer hover:underline">Sign in</span></p>
                 </div>
             </div>
 
-            <p class="text-xs text-gray-400 mt-6">© 2026 BS MART Inc.</p>
+            <div id="otp-box" class="w-full max-w-sm border border-gray-300 rounded p-6 shadow-sm bg-white hidden">
+                <h2 class="text-2xl font-normal mb-2">Verification Required</h2>
+                <p class="text-xs text-gray-600 mb-4">To continue, complete this verification step. We've sent an OTP to your phone.</p>
+                
+                <label class="block text-xs font-bold mb-1">Enter OTP</label>
+                <input type="number" id="otp-input" class="w-full border rounded p-2 mb-4 text-sm tracking-widest outline-none focus:ring-2 focus:ring-[#e77600]">
+
+                <button onclick="verifyFinalOTP()" class="btn-amazon-primary w-full py-2 rounded-sm text-sm shadow-sm">Create your Amazon account</button>
+                <button onclick="location.reload()" class="w-full text-xs text-blue-700 mt-3 hover:underline">Resend OTP / Change Number</button>
+            </div>
+
+            <div class="mt-8 text-center border-t w-full max-w-lg pt-4">
+                <div class="flex justify-center gap-4 text-xs text-blue-700 mb-2">
+                    <span>Conditions of Use</span>
+                    <span>Privacy Notice</span>
+                    <span>Help</span>
+                </div>
+                <p class="text-[10px] text-gray-500">© 2026, BS Mart, Inc. or its affiliates</p>
+            </div>
+            
+            <button onclick="toggleModal('auth-modal')" class="absolute top-4 right-4 text-gray-400 text-2xl">&times;</button>
         </div>
     </div>
 
     <div id="product-page" class="fixed inset-0 bg-white z-[60] hidden overflow-y-auto fade-in">
-        <div class="bg-[#232f3e] text-white p-3 flex items-center gap-3 sticky top-0 shadow">
+        <div class="bg-[#232f3e] text-white p-3 flex items-center gap-3 sticky top-0 shadow z-10">
             <button onclick="closeProductPage()"><i class="fa-solid fa-arrow-left text-lg"></i></button>
             <span class="font-bold truncate" id="pp-header-title">Details</span>
         </div>
@@ -97,15 +182,11 @@
                 <div class="h-72 flex justify-center items-center bg-gray-50 mb-4 rounded-lg border">
                     <img id="pp-img" src="" class="max-h-full max-w-full object-contain">
                 </div>
-                <span id="pp-badge" class="hidden absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow animate-pulse"></span>
             </div>
             <h1 id="pp-title" class="text-lg font-medium text-gray-800 leading-snug mb-2"></h1>
             <div class="bg-gray-50 p-3 rounded mb-4 border border-gray-100">
-                <div class="flex items-baseline gap-2">
-                    <span id="pp-discount-text" class="text-orange-600 text-xl font-light hidden"></span>
-                    <span class="text-3xl font-bold text-gray-900">₹<span id="pp-price"></span></span>
-                </div>
-                <p id="pp-mrp-block" class="text-xs text-gray-500 mt-1 hidden">M.R.P.: <span class="line-through" id="pp-old-price"></span></p>
+                <span class="text-3xl font-bold text-gray-900">₹<span id="pp-price"></span></span>
+                <span class="text-sm text-gray-500 block">Inclusive of all taxes</span>
             </div>
             
             <div id="size-section" class="mb-5">
@@ -120,416 +201,329 @@
             </div>
 
             <hr class="border-gray-200 my-4">
-            
             <div class="mb-6">
-                <h3 class="font-bold text-md mb-2">Description</h3>
+                <h3 class="font-bold text-md mb-2">Product Description</h3>
                 <p id="pp-desc" class="text-sm text-gray-600 leading-relaxed"></p>
             </div>
             
-            <div class="mb-6">
-                <h3 class="font-bold text-md mb-3">Customer Reviews</h3>
-                <div id="pp-reviews" class="space-y-4 mb-6"></div>
-                
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h4 class="font-bold text-sm mb-2">Write a Review</h4>
-                    <select id="review-stars" class="w-full border p-2 rounded text-sm mb-2 text-yellow-500 font-bold">
-                        <option value="★★★★★">★★★★★ (Excellent)</option>
-                        <option value="★★★★☆">★★★★☆ (Good)</option>
-                    </select>
-                    <textarea id="review-text" class="w-full border p-2 rounded text-sm mb-2" placeholder="Describe your experience..."></textarea>
-                    <button onclick="submitReview()" class="w-full bg-[#232f3e] text-white text-sm py-2 rounded font-bold hover:bg-black">Submit Review</button>
-                </div>
-            </div>
-
-            <div class="fixed bottom-0 left-0 right-0 bg-white p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-                <button onclick="openCheckoutFromPage()" class="w-full bg-[#ffd814] text-black py-3 rounded-full font-bold shadow-sm border border-[#fcd200] hover:bg-[#f7ca00]">Buy Now</button>
+            <div class="fixed bottom-0 left-0 right-0 bg-white p-3 flex gap-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+                <button type="button" onclick="addToCartCurrent()" class="flex-1 bg-[#fffae6] text-black border border-[#ffd814] py-3 rounded-full font-bold text-sm hover:bg-[#f7ca00]">
+                    Add to Cart
+                </button>
+                <button type="button" onclick="openCheckoutFromPage()" class="flex-1 btn-amazon-primary py-3 rounded-full font-bold text-sm shadow-sm">
+                    Buy Now
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="checkout-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[70] hidden flex items-center justify-center fade-in p-4">
-        <div class="bg-white w-full max-w-sm rounded-lg p-5 relative shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h2 class="text-lg font-bold">Order Summary</h2>
-                <button onclick="toggleModal('checkout-modal')" class="text-gray-500 text-2xl">&times;</button>
+    <div id="cart-sidebar" class="fixed inset-0 bg-black bg-opacity-50 z-[70] hidden flex justify-end">
+        <div class="bg-white w-full md:w-96 h-full shadow-2xl flex flex-col">
+            <div class="bg-[#232f3e] text-white p-4 flex justify-between items-center">
+                <h2 class="font-bold">Subtotal</h2>
+                <button onclick="toggleCart()"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            <div id="cart-items-container" class="flex-1 overflow-y-auto p-3 space-y-3 bg-gray-100"></div>
+            <div class="p-4 border-t bg-white">
+                <div class="flex justify-between font-bold text-xl mb-4 text-[#B12704]">
+                    <span>Total:</span>
+                    <span>₹<span id="cart-total">0.00</span></span>
+                </div>
+                <button onclick="checkoutCart()" class="w-full btn-amazon-primary py-3 rounded-lg font-bold shadow">Proceed to Buy</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkout-modal" class="fixed inset-0 bg-white z-[70] hidden flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-lg bg-white h-full overflow-y-auto">
+            <div class="bg-[#232f3e] text-white p-4 flex justify-between items-center sticky top-0">
+                <h2 class="text-lg font-bold">Checkout</h2>
+                <button onclick="toggleModal('checkout-modal')" class="text-white text-2xl">&times;</button>
             </div>
             
-            <form id="order-form" onsubmit="submitOrder(event)" enctype="multipart/form-data">
-                <input type="hidden" name="_subject" value="New BS MART Order (Verified)">
+            <form id="order-form" onsubmit="submitOrder(event)" enctype="multipart/form-data" class="p-4 space-y-4">
+                <input type="hidden" name="_subject" value="New BS MART Order">
                 <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" id="form-name" name="Product_List">
+                <input type="hidden" id="form-price" name="Total_Price">
                 
-                <input type="hidden" id="form-name" name="Product">
-                <input type="hidden" id="form-price" name="Price">
-                <input type="hidden" id="form-size" name="Size">
+                <div class="bg-gray-100 p-3 rounded border text-sm">
+                    <span class="font-bold text-[#B12704] block text-lg">Order Total: ₹<span id="checkout-display-total">0</span></span>
+                </div>
+
+                <h3 class="font-bold border-b pb-1">Delivery Address</h3>
+                <input type="text" id="cust-name" name="Name" placeholder="Full Name" required class="w-full border rounded p-2 text-sm outline-none focus:border-[#e77600]">
+                <input type="tel" id="cust-phone" name="Mobile" placeholder="Mobile Number" required class="w-full border rounded p-2 text-sm outline-none focus:border-[#e77600]">
+                <textarea name="Address" placeholder="Full Address (House No, Area, City, Pincode)" required class="w-full border rounded p-2 text-sm outline-none focus:border-[#e77600]" rows="3"></textarea>
                 
+                <h3 class="font-bold border-b pb-1 pt-2">Payment Method</h3>
                 <div class="space-y-3">
-                    <input type="text" id="cust-name" name="Name" placeholder="Full Name" required class="w-full border rounded p-2 text-sm outline-none focus:border-[#e77600]">
-                    <input type="tel" name="Mobile" placeholder="Mobile Number" required class="w-full border rounded p-2 text-sm outline-none focus:border-[#e77600]">
+                    <div class="border rounded p-3 bg-gray-50 flex items-center gap-3">
+                        <input type="radio" name="Payment" value="COD" checked onclick="togglePaymentMethod('COD')" class="accent-[#e77600] w-4 h-4">
+                        <span class="text-sm font-bold">Cash on Delivery</span>
+                    </div>
                     
-                    <input type="tel" name="Pin_Code" placeholder="Pin Code" required class="w-full border rounded p-2 text-sm outline-none focus:border-[#e77600]">
-
-                    <input type="text" name="Landmark" placeholder="Nearby Landmark" required class="w-full border rounded p-2 text-sm outline-none focus:border-[#e77600]">
-
-                    <textarea name="Address" placeholder="Full Address (House No, Street, Colony)" required class="w-full border rounded p-2 text-sm outline-none focus:border-[#e77600]" rows="3"></textarea>
-                    
-                    <div class="bg-gray-50 p-3 rounded border">
-                        <p class="font-bold text-xs mb-2 text-gray-700">Payment Method</p>
-                        <label class="flex items-center gap-2 mb-2 cursor-pointer">
-                            <input type="radio" name="Payment" value="COD" checked onclick="togglePaymentMethod('COD')" class="accent-[#e77600]">
-                            <span class="text-sm">Cash on Delivery</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="Payment" value="Online" onclick="togglePaymentMethod('Online')" class="accent-[#e77600]">
-                            <span class="text-sm">UPI / QR Code</span>
-                        </label>
-                        
-                        <div id="qr-box" class="hidden text-center mt-2 border-t pt-2">
-                            <img id="qr-img" src="" class="w-32 h-32 mx-auto border bg-white p-1 mb-2">
-                            <p class="text-[10px] text-red-500 mt-1 font-bold mb-2">Scan & Pay Now</p>
-                            
-                            <div class="text-left bg-white p-2 border border-dashed border-gray-400 rounded relative">
-                                <label class="text-[11px] font-bold text-gray-700 block mb-1">Upload Payment Screenshot:</label>
-                                <input type="file" id="pay-screenshot" name="Payment_Screenshot" accept="image/*" class="w-full text-xs" disabled>
-                            </div>
-                            
-                            <div id="scan-status" class="hidden mt-2 p-2 bg-blue-50 text-blue-800 text-xs rounded border border-blue-200">
-                                <i class="fa-solid fa-spinner fa-spin"></i> Reading Screenshot...
-                            </div>
-                            
-                            <p class="text-[10px] text-gray-500 mt-1 font-bold">*System will verify if ₹<span id="qr-amount-display">0</span> is in the image.</p>
+                    <div class="border rounded p-3 bg-gray-50">
+                        <div class="flex items-center gap-3 mb-2">
+                            <input type="radio" name="Payment" value="Online" onclick="togglePaymentMethod('Online')" class="accent-[#e77600] w-4 h-4">
+                            <span class="text-sm font-bold">UPI / QR Code</span>
+                        </div>
+                        <div id="qr-box" class="hidden pl-7">
+                            <img id="qr-img" src="" class="w-32 h-32 border bg-white p-1 mb-2">
+                            <p class="text-xs text-gray-500 mb-1">Scan & Attach Screenshot:</p>
+                            <input type="file" id="pay-screenshot" name="Payment_Screenshot" accept="image/*" class="w-full text-xs" disabled>
                         </div>
                     </div>
                 </div>
-                <button type="submit" id="place-order-btn" class="w-full bg-[#ffd814] border border-[#fcd200] py-3 rounded-lg font-bold mt-4 shadow hover:bg-[#f7ca00]">Place Order</button>
+
+                <button type="submit" id="place-order-btn" class="w-full btn-amazon-primary py-3 rounded-lg font-bold mt-4 shadow-md">Place Your Order</button>
             </form>
         </div>
     </div>
 
     <div id="invoice-modal" class="fixed inset-0 bg-black bg-opacity-80 z-[80] hidden flex items-center justify-center fade-in p-4">
-        <div class="bg-white w-full max-w-sm rounded-none shadow-2xl relative overflow-hidden">
-            <div class="bg-[#232f3e] text-white p-4 text-center">
-                <h2 class="text-xl font-bold tracking-wider">BS <span class="text-[#febd69]">MART</span></h2>
-                <p class="text-[10px] opacity-80">ORDER CONFIRMATION</p>
-            </div>
-            
-            <div class="p-6">
-                <div class="text-center mb-6">
-                    <i class="fa-solid fa-circle-check text-green-500 text-4xl mb-2"></i>
-                    <h3 class="font-bold text-lg text-gray-800">Order Placed!</h3>
-                    <p class="text-xs text-gray-500">Status: <span class="text-green-600 font-bold">Confirmed</span> <i class="fa-solid fa-check-double ml-1"></i></p>
-                </div>
-
-                <div class="space-y-2 text-sm mb-6 border-b border-dashed pb-4">
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Order ID:</span>
-                        <span class="font-mono font-bold" id="inv-id">#10293</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Customer:</span>
-                        <span class="font-bold" id="inv-name">User</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Payment:</span>
-                        <span class="font-bold" id="inv-mode">Online</span>
-                    </div>
-                </div>
-
-                <button onclick="location.reload()" class="w-full bg-[#232f3e] text-white py-3 font-bold text-sm tracking-widest hover:bg-black">CONTINUE SHOPPING</button>
-            </div>
-            <div class="receipt-tear h-4 w-full absolute bottom-[-10px]"></div>
-        </div>
-    </div>
-
-    <div id="admin-panel" class="fixed inset-0 bg-black bg-opacity-80 z-[90] hidden flex items-center justify-center fade-in">
-        <div class="bg-white p-6 rounded w-80 max-h-[80vh] overflow-y-auto">
-            <h3 class="font-bold text-lg mb-3">Add Product</h3>
-            <p class="text-xs text-gray-500 mb-4">Adding directly to Google Sheet is recommended.</p>
-            <form onsubmit="event.preventDefault(); uploadProduct();" class="space-y-2">
-                <input type="text" id="a-name" placeholder="Product Title" class="w-full border p-2 rounded text-sm">
-                <div class="flex gap-2">
-                    <input type="number" id="a-price" placeholder="Price (₹)" class="w-full border p-2 rounded text-sm">
-                    <input type="number" id="a-old-price" placeholder="MRP (Old Price)" class="w-full border p-2 rounded text-sm bg-orange-50">
-                </div>
-                <select id="a-cat" class="w-full border p-2 rounded text-sm">
-                    <option value="Mens Wear">Mens Wear</option>
-                    <option value="Womens">Womens</option>
-                    <option value="Electronics">Electronics</option>
-                </select>
-                <textarea id="a-desc" placeholder="Product Description..." class="w-full border p-2 rounded text-sm"></textarea>
-                <p class="text-xs font-bold">Image (Upload from Phone)</p>
-                <input type="file" id="a-img" class="w-full text-xs">
-                <button type="submit" id="upload-btn" class="w-full bg-[#232f3e] text-white py-2 rounded mt-2">Add Product</button>
-                <button type="button" onclick="toggleModal('admin-panel')" class="w-full text-gray-500 mt-2 text-sm">Close</button>
-            </form>
+        <div class="bg-white w-full max-w-sm p-6 text-center rounded-lg shadow-xl">
+            <i class="fa-solid fa-check-circle text-green-500 text-5xl mb-3"></i>
+            <h3 class="font-bold text-xl text-gray-800 mb-2">Order Placed, Thanks!</h3>
+            <p class="text-sm text-gray-600 mb-4">Confirmation will be sent to your email.</p>
+            <button onclick="location.reload()" class="w-full btn-amazon-primary py-3 rounded font-bold text-sm">Continue Shopping</button>
         </div>
     </div>
 
     <script>
+        // --- 1. FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDn2VbBA1cnP3BF4aPodIsP6jPQVcQiQbU",
+            authDomain: "bs-mart-8a181.firebaseapp.com",
+            projectId: "bs-mart-8a181",
+            storageBucket: "bs-mart-8a181.firebasestorage.app",
+            messagingSenderId: "1084918129730",
+            appId: "1:1084918129730:web:c97892f46f0748ec9279db"
+        };
+        
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const auth = firebase.auth();
+        
+        // --- 2. GLOBAL STATE ---
         let allProducts = [];
         let displayedProducts = []; 
+        let cart = JSON.parse(localStorage.getItem('bsmart_cart')) || [];
+        let currentUser = null;
         let selectedSize = null;
         let currentProduct = null;
+        let authMode = 'login'; // 'login' or 'signup'
 
-        // FAKE REVIEWS ARRAY
-        const fakeReviews = [
-            "Amazing quality for this price! 😍|Very comfortable fabric.|Delivery was super fast.",
-            "Best purchase ever.|Fitting is perfect.|Will order again for sure.",
-            "Material is soft and durable.|Looks exactly like the photo.|Value for money 💯",
-            "Highly recommended! ⭐⭐⭐⭐⭐|Loved the packaging.",
-            "Good product, value for money.|Fast delivery."
-        ];
+        // --- 3. INIT ---
+        window.onload = function() {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
+            updateCartUI();
+        };
 
-        const CACHE_KEY = 'bs_mart_cache_v1';
-        
-        // Load from Cache immediately
-        const cachedData = localStorage.getItem(CACHE_KEY);
-        if (cachedData) {
-            try { 
-                allProducts = JSON.parse(cachedData); 
-                document.getElementById('loading').style.display = 'none'; 
-                renderGrid(allProducts); 
-            } catch(e) {}
+        // --- 4. AUTH LOGIC ---
+        function handleProfileClick() {
+            if (currentUser) {
+                if(confirm("Log out of BS Mart?")) logout();
+            } else {
+                toggleModal('auth-modal');
+                switchAuthMode('login');
+            }
         }
 
-        // Fetch Fresh Data
-        fetch(API_URL)
-            .then(res => res.json())
-            .then(data => {
-                allProducts = data;
-                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-                document.getElementById('loading').style.display = 'none';
-                renderGrid(data);
-            })
-            .catch(err => console.log("Network Error"));
+        function switchAuthMode(mode) {
+            authMode = mode;
+            document.getElementById('otp-box').classList.add('hidden');
+            if (mode === 'login') {
+                document.getElementById('login-box').classList.remove('hidden');
+                document.getElementById('signup-box').classList.add('hidden');
+            } else {
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('signup-box').classList.remove('hidden');
+            }
+        }
 
-        function getOldPrice(p) { return p.Old_Price || p["Old Price"] || p.MRP || 0; }
+        // Login OTP
+        function triggerLoginOTP() {
+            const phone = "+91" + document.getElementById('login-phone').value;
+            if(phone.length < 13) return alert("Enter valid mobile number");
+            sendOTP(phone, "User");
+        }
+
+        // Signup OTP
+        function triggerSignupOTP() {
+            const name = document.getElementById('signup-name').value;
+            const phone = "+91" + document.getElementById('signup-phone').value;
+            if(!name || phone.length < 13) return alert("Fill all details");
+            sendOTP(phone, name);
+        }
+
+        function sendOTP(phone, name) {
+            localStorage.setItem('bsmart_temp_name', name);
+            const appVerifier = window.recaptchaVerifier;
+            
+            auth.signInWithPhoneNumber(phone, appVerifier)
+                .then((confirmationResult) => {
+                    window.confirmationResult = confirmationResult;
+                    document.getElementById('login-box').classList.add('hidden');
+                    document.getElementById('signup-box').classList.add('hidden');
+                    document.getElementById('otp-box').classList.remove('hidden');
+                }).catch((error) => alert(error.message));
+        }
+
+        function verifyFinalOTP() {
+            const code = document.getElementById('otp-input').value;
+            window.confirmationResult.confirm(code).then((result) => {
+                const name = localStorage.getItem('bsmart_temp_name');
+                localStorage.setItem('bsmart_username', name);
+                
+                // Alert Admin of New User
+                const fd = new FormData();
+                fd.append("Subject", "New Amazon-Style Login");
+                fd.append("Details", `${name} logged in with ${result.user.phoneNumber}`);
+                fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd });
+
+                toggleModal('auth-modal');
+                location.reload(); 
+            }).catch(() => alert("Incorrect OTP"));
+        }
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                const savedName = localStorage.getItem('bsmart_username') || "User";
+                document.getElementById('nav-user-name').innerText = savedName;
+                if(localStorage.getItem('bsmart_username')) {
+                    document.getElementById('cust-name').value = savedName;
+                    document.getElementById('cust-phone').value = user.phoneNumber;
+                }
+            } else {
+                currentUser = null;
+                document.getElementById('nav-user-name').innerText = "Sign in";
+            }
+        });
+
+        function logout() { auth.signOut().then(() => location.reload()); }
+
+        // --- 5. PRODUCTS & CART ---
+        fetch(API_URL).then(res => res.json()).then(data => {
+            allProducts = data;
+            displayedProducts = data;
+            document.getElementById('loading').style.display = 'none';
+            renderGrid(data);
+        });
 
         function renderGrid(products) {
-            displayedProducts = products;
             const grid = document.getElementById('product-grid');
             grid.innerHTML = "";
+            if(products.length === 0) { grid.innerHTML = "<p class='col-span-full text-center p-4'>No products found.</p>"; return; }
+
             products.forEach((p, index) => {
                 const price = Number(p.Price || p.price);
-                const oldPrice = Number(getOldPrice(p)); 
-                
-                let discountHTML = "";
-                let oldPriceHTML = "";
-                
-                if (oldPrice > price) {
-                    discountHTML = `<span class="absolute top-2 left-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">${Math.floor(((oldPrice - price) / oldPrice) * 100)}% off</span>`;
-                    oldPriceHTML = `<span class="text-xs text-gray-500 line-through ml-1">₹${oldPrice}</span>`;
-                }
-                
                 grid.innerHTML += `
-                    <div onclick="openProduct(${index})" class="bg-white p-2 rounded-lg border border-gray-200 shadow-sm relative cursor-pointer hover:shadow-md">
-                        ${discountHTML}
-                        <div class="h-40 flex justify-center items-center bg-gray-50 mb-2 rounded overflow-hidden">
+                    <div onclick="openProduct(${index})" class="bg-white p-2 border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow h-64 flex flex-col justify-between">
+                        <div class="h-40 flex justify-center items-center bg-gray-50 mb-2 overflow-hidden">
                             <img src="${p.Image || p.image}" class="h-full object-contain mix-blend-multiply">
                         </div>
-                        <h3 class="text-xs font-bold text-gray-800 line-clamp-2 h-8 leading-4 mb-1">${p.Name || p.name}</h3>
-                        <div class="flex items-baseline gap-1 mt-1">
-                            <span class="text-sm font-bold text-gray-900">₹${price}</span>
-                            ${oldPriceHTML}
+                        <div>
+                            <h3 class="text-sm font-normal text-[#131921] line-clamp-2 leading-tight hover:text-[#e77600]">${p.Name || p.name}</h3>
+                            <div class="mt-1">
+                                <span class="text-xs align-top">₹</span><span class="text-lg font-bold">${price}</span>
+                                <span class="text-xs text-gray-500 ml-1">M.R.P. <span class="line-through">₹${Math.floor(price * 1.2)}</span></span>
+                            </div>
                         </div>
                     </div>`;
             });
         }
 
-        function openProduct(index) { showProductPage(displayedProducts[index]); }
+        function openProduct(index) { 
+            currentProduct = displayedProducts[index]; 
+            showProductPage(currentProduct); 
+        }
 
         function showProductPage(product) {
-            currentProduct = product;
             selectedSize = null;
-            const price = Number(product.Price || product.price);
-            
             document.getElementById('pp-img').src = product.Image || product.image;
             document.getElementById('pp-title').innerText = product.Name || product.name;
-            document.getElementById('pp-header-title').innerText = (product.Name || product.name).substring(0, 15) + "...";
-            document.getElementById('pp-price').innerText = price;
-            document.getElementById('pp-desc').innerText = product.Description || "High quality product.";
+            document.getElementById('pp-price').innerText = product.Price || product.price;
+            document.getElementById('pp-desc').innerText = product.Description || "Detailed description not available.";
             
-            // Discount Logic
-            const oldPrice = Number(getOldPrice(product));
-            if (oldPrice > price) {
-                const percent = Math.floor(((oldPrice - price) / oldPrice) * 100);
-                document.getElementById('pp-badge').innerText = `${percent}% OFF`; 
-                document.getElementById('pp-badge').classList.remove('hidden'); 
-                document.getElementById('pp-discount-text').innerText = `-${percent}%`; 
-                document.getElementById('pp-discount-text').classList.remove('hidden');
-                document.getElementById('pp-old-price').innerText = "₹" + oldPrice; 
-                document.getElementById('pp-mrp-block').classList.remove('hidden');
-            } else {
-                document.getElementById('pp-badge').classList.add('hidden'); 
-                document.getElementById('pp-discount-text').classList.add('hidden'); 
-                document.getElementById('pp-mrp-block').classList.add('hidden');
-            }
-
-            // Fake Reviews Logic
-            const reviewsDiv = document.getElementById('pp-reviews');
-            reviewsDiv.innerHTML = "";
-            let rawReviews = product.Reviews || product.reviews;
-            if (!rawReviews) {
-                // If no real reviews, pick random fake ones
-                rawReviews = fakeReviews[Math.floor(Math.random() * fakeReviews.length)];
-            }
-            rawReviews.split('|').forEach(r => {
-                reviewsDiv.innerHTML += `
-                    <div class="text-sm border-b pb-2">
-                        <div class="flex items-center gap-1 mb-1">
-                            <i class="fa-solid fa-user-circle text-gray-400 text-lg"></i>
-                            <span class="font-bold text-xs text-gray-700">Verified User</span>
-                        </div>
-                        <div class="text-yellow-500 text-xs">★★★★★</div>
-                        <p class="text-gray-600 text-xs mt-1">${r}</p>
-                    </div>
-                `;
-            });
-
-            document.querySelectorAll('.size-btn').forEach(b => { b.classList.remove('bg-[#fcd200]', 'border-[#e77600]', 'text-black'); });
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('bg-[#fcd200]', 'border-[#e77600]', 'text-black'));
             document.getElementById('size-error').classList.add('hidden');
+
             document.getElementById('main-view').classList.add('hidden');
             document.getElementById('product-page').classList.remove('hidden');
             window.scrollTo(0,0);
         }
 
-        function submitReview() {
-            alert("Review Submitted! Thank you.");
-            document.getElementById('review-text').value = "";
-        }
-
-        function togglePaymentMethod(method) {
-            const qrBox = document.getElementById('qr-box');
-            const fileInput = document.getElementById('pay-screenshot');
-            if (method === 'Online') {
-                document.getElementById('qr-img').src = QR_CODE_IMAGE;
-                qrBox.classList.remove('hidden');
-                fileInput.removeAttribute('disabled');
-            } else {
-                qrBox.classList.add('hidden');
-                fileInput.setAttribute('disabled', 'true');
-            }
-        }
-
-        // --- STRICT AI PAYMENT CHECK & SUBMISSION ---
-        async function submitOrder(e) {
-            e.preventDefault();
-            const payMethod = document.querySelector('input[name="Payment"]:checked').value;
-            const fileInput = document.getElementById('pay-screenshot');
-            const custName = document.getElementById('cust-name').value;
-            const btn = document.getElementById('place-order-btn');
-            const statusBox = document.getElementById('scan-status');
-            
-            // Expected Price
-            const price = String(currentProduct.Price || currentProduct.price);
-
-            if(payMethod === 'Online') {
-                if(fileInput.files.length === 0) {
-                    alert("Please upload payment screenshot."); return;
-                }
-
-                // Lock UI
-                btn.disabled = true;
-                btn.innerText = "Wait...";
-                btn.classList.add("bg-gray-300");
-                statusBox.classList.remove('hidden');
-
-                try {
-                    // AI Scan
-                    const result = await Tesseract.recognize(fileInput.files[0], 'eng');
-                    const text = result.data.text; // The scanned text
-                    const cleanText = text.replace(/,/g, ''); // Handle 1,200 as 1200
-                    
-                    console.log("AI Scanned:", cleanText); 
-
-                    // Check if price exists in text
-                    if (!cleanText.includes(price)) {
-                        alert(`❌ VERIFICATION FAILED\n\nWe could not find "₹${price}" in your screenshot.\n\nPlease upload a clear screenshot showing the correct amount.`);
-                        
-                        // Reset
-                        btn.disabled = false;
-                        btn.innerText = "Place Order";
-                        btn.classList.remove("bg-gray-300");
-                        statusBox.classList.add('hidden');
-                        return; // STOP
-                    }
-
-                } catch (error) {
-                    console.error(error);
-                    alert("Scan Error. Please try again or use COD.");
-                    btn.disabled = false;
-                    btn.innerText = "Place Order";
-                    btn.classList.remove("bg-gray-300");
-                    statusBox.classList.add('hidden');
-                    return;
-                }
-            }
-
-            // Send Order
-            btn.innerText = "Placing Order...";
-            
-            const formData = new FormData(document.getElementById('order-form'));
-            
-            fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: formData })
-                .then(() => { showInvoice(custName, payMethod); toggleModal('checkout-modal'); })
-                .catch(() => { showInvoice(custName, payMethod); toggleModal('checkout-modal'); })
-                .finally(() => { 
-                    btn.disabled = false; 
-                    btn.innerText = "Place Order"; 
-                    btn.classList.remove("bg-gray-300"); 
-                    statusBox.classList.add('hidden');
-                });
-        }
-
-        function showInvoice(name, mode) {
-            document.getElementById('inv-id').innerText = "#" + Math.floor(10000 + Math.random() * 90000);
-            document.getElementById('inv-name').innerText = name;
-            document.getElementById('inv-mode').innerText = mode;
-            toggleModal('invoice-modal');
-        }
-
-        function closeProductPage() {
-            document.getElementById('product-page').classList.add('hidden');
-            document.getElementById('main-view').classList.remove('hidden');
-        }
-
-        function selectSize(btn, size) {
-            selectedSize = size;
-            document.querySelectorAll('.size-btn').forEach(b => { b.classList.remove('bg-[#fcd200]', 'border-[#e77600]', 'text-black'); });
-            btn.classList.add('bg-[#fcd200]', 'border-[#e77600]', 'text-black');
-            document.getElementById('size-error').classList.add('hidden');
-        }
-
-        function openCheckoutFromPage() {
+        function addToCartCurrent() {
+            if(!currentProduct) return;
             if (!selectedSize && (currentProduct.Category || "").includes("Wear")) {
                 document.getElementById('size-error').classList.remove('hidden'); return;
             }
-            document.getElementById('form-name').value = currentProduct.Name || currentProduct.name;
-            document.getElementById('form-price').value = currentProduct.Price || currentProduct.price;
-            document.getElementById('form-size').value = selectedSize || "Universal";
-            document.getElementById('qr-amount-display').innerText = currentProduct.Price || currentProduct.price;
-            toggleModal('checkout-modal');
+            
+            cart.push({
+                name: currentProduct.Name || currentProduct.name,
+                price: currentProduct.Price || currentProduct.price,
+                image: currentProduct.Image || currentProduct.image,
+                size: selectedSize || "Std",
+                qty: 1
+            });
+            saveCart();
+            alert("Added to Cart");
+            closeProductPage();
         }
 
+        function saveCart() { localStorage.setItem('bsmart_cart', JSON.stringify(cart)); updateCartUI(); }
+        
+        function updateCartUI() {
+            document.getElementById('cart-count').innerText = cart.length;
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = "";
+            let total = 0;
+
+            if(cart.length === 0) container.innerHTML = "<p class='text-center mt-10 text-sm'>Your Amazon Cart is empty.</p>";
+            
+            cart.forEach((item, index) => {
+                total += Number(item.price);
+                container.innerHTML += `
+                    <div class="flex gap-3 bg-white p-3 rounded border mb-2 shadow-sm">
+                        <img src="${item.image}" class="w-16 h-16 object-contain">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-sm line-clamp-2 text-[#007185]">${item.name}</h4>
+                            <p class="text-xs font-bold text-[#B12704] mt-1">₹${item.price}</p>
+                            <p class="text-xs text-gray-500">Size: ${item.size}</p>
+                        </div>
+                        <button onclick="removeFromCart(${index})" class="text-xs border p-1 rounded h-8 px-3 bg-gray-50 shadow-sm">Delete</button>
+                    </div>`;
+            });
+            document.getElementById('cart-total').innerText = total;
+            document.getElementById('checkout-display-total').innerText = total;
+        }
+
+        function removeFromCart(index) { cart.splice(index, 1); saveCart(); }
+
+        // --- UTILS ---
+        function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('hidden'); }
         function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+        function closeProductPage() { document.getElementById('product-page').classList.add('hidden'); document.getElementById('main-view').classList.remove('hidden'); }
+        function selectSize(btn, size) { selectedSize = size; document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('bg-[#fcd200]', 'border-[#e77600]', 'text-black')); btn.classList.add('bg-[#fcd200]', 'border-[#e77600]', 'text-black'); document.getElementById('size-error').classList.add('hidden'); }
         function searchProducts() { const q = document.getElementById('search').value.toLowerCase(); renderGrid(allProducts.filter(p => (p.Name || p.name).toLowerCase().includes(q))); }
         function filterProducts(c) { renderGrid(c === 'All' ? allProducts : allProducts.filter(p => (p.Category || p.category) === c)); }
         
-        let taps = 0;
-        function adminLoginTrigger() {
-            taps++; if(taps === 5) { if(prompt("Admin Password") === "admin123") toggleModal('admin-panel'); taps = 0; }
+        function checkoutCart() {
+            if(cart.length === 0) return alert("Cart is empty");
+            let total = 0, list = "";
+            cart.forEach(i => { total+=Number(i.price); list+=`${i.name}, `; });
+            document.getElementById('form-name').value = list;
+            document.getElementById('form-price').value = total;
+            toggleCart(); toggleModal('checkout-modal');
         }
-        
-        function uploadProduct() {
-            const btn = document.getElementById('upload-btn');
-            const file = document.getElementById('a-img').files[0];
-            if(!file) return alert("Select Image");
-            btn.innerText = "Saving...";
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const payload = { action: "add", name: document.getElementById('a-name').value, price: document.getElementById('a-price').value, old_price: document.getElementById('a-old-price').value, category: document.getElementById('a-cat').value, image: e.target.result, description: document.getElementById('a-desc').value };
-                fetch(API_URL, { method: "POST", mode: "no-cors", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) }).then(() => { alert("Added!"); location.reload(); });
-            };
-            reader.readAsDataURL(file);
+
+        function submitOrder(e) { e.preventDefault(); toggleModal('checkout-modal'); toggleModal('invoice-modal'); cart=[]; saveCart(); }
+        function togglePaymentMethod(m) { 
+            const box = document.getElementById('qr-box'); 
+            const inp = document.getElementById('pay-screenshot');
+            if(m === 'Online') { box.classList.remove('hidden'); inp.removeAttribute('disabled'); document.getElementById('qr-img').src = QR_CODE_IMAGE; }
+            else { box.classList.add('hidden'); inp.setAttribute('disabled', 'true'); }
         }
     </script>
 </body>
