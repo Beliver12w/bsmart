@@ -14,11 +14,7 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
-                    colors: {
-                        primary: '#0F172A',
-                        accent: '#F59E0B',
-                        surface: '#F8FAFC'
-                    }
+                    colors: { primary: '#0F172A', accent: '#F59E0B', surface: '#F8FAFC' }
                 }
             }
         }
@@ -55,7 +51,7 @@
         <div class="w-full max-w-sm space-y-4">
             <input type="text" id="login-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-medium transition" placeholder="Full Name">
             <input type="tel" id="login-phone" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-medium transition" placeholder="Mobile Number">
-            <button id="login-btn" onclick="doLogin()" class="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-900/20 active:scale-95 transition-transform">
+            <button onclick="doLogin()" class="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-900/20 active:scale-95 transition-transform">
                 Start Shopping
             </button>
         </div>
@@ -102,15 +98,32 @@
                     </div>
                 </div>
             </div>
+            
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-bold text-slate-800">Popular Products</h2>
                 <span class="text-xs text-slate-400 font-medium">View All</span>
             </div>
+
             <div id="loading" class="text-center py-10">
                 <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
                 <p class="mt-4 text-xs text-slate-400 font-medium tracking-wide">LOADING STORE...</p>
             </div>
+
             <div id="grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+
+            <div class="bg-white mt-8 p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h3 class="font-bold text-lg mb-2 text-primary">About BS MART</h3>
+                <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                    BS MART is your go-to destination for the latest in Fashion and Electronics. 
+                    We ensure high-quality products, secure payments via UPI/QR, and express home delivery.
+                    Shop with confidence!
+                </p>
+                <div class="space-y-2 text-xs text-slate-600">
+                    <p><i class="fa-solid fa-envelope text-accent mr-2"></i> suheemsuheem752@gmail.com</p>
+                    <p><i class="fa-solid fa-phone text-accent mr-2"></i> +91 99999 99999</p>
+                    <p><i class="fa-solid fa-location-dot text-accent mr-2"></i> New Delhi, India</p>
+                </div>
+            </div>
         </main>
 
         <nav class="fixed bottom-0 w-full bg-white border-t border-slate-100 pb-safe z-40 flex justify-around items-center py-3 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
@@ -138,11 +151,13 @@
                         <span id="dt-off" class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded"></span>
                     </div>
                 </div>
+                
                 <div class="flex items-center gap-2 mb-6 border-b pb-4 border-slate-100">
                     <div class="flex text-accent text-xs"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i></div>
-                    <span class="text-sm font-bold text-slate-700">4.5</span>
-                    <span class="text-sm text-slate-400">(120 Reviews)</span>
+                    <span class="text-sm font-bold text-slate-700">4.8</span>
+                    <span class="text-sm text-slate-400">(150 Reviews)</span>
                 </div>
+
                 <div class="mb-6">
                     <h3 class="text-xs font-bold text-slate-400 uppercase mb-3">Select Size</h3>
                     <div class="flex gap-3">
@@ -152,9 +167,30 @@
                         <button onclick="setSize(this, 'XL')" class="size-box w-12 h-12 rounded-xl border border-slate-200 font-bold text-slate-600 hover:border-primary hover:text-primary transition">XL</button>
                     </div>
                 </div>
+
                 <div class="mb-6">
                     <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Description</h3>
-                    <div class="bg-slate-50 p-4 rounded-xl"><p id="dt-desc" class="text-sm text-slate-600 leading-relaxed">Loading details...</p></div>
+                    <div class="bg-slate-50 p-4 rounded-xl mb-4">
+                        <p id="dt-desc" class="text-sm text-slate-600 leading-relaxed">Loading details...</p>
+                    </div>
+
+                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Customer Reviews</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white border border-slate-100 p-3 rounded-xl shadow-sm">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-bold text-xs text-slate-800">Amit Kumar</span>
+                                <span class="text-[10px] text-accent">★★★★★</span>
+                            </div>
+                            <p class="text-xs text-slate-500">Amazing quality and fast delivery!</p>
+                        </div>
+                        <div class="bg-white border border-slate-100 p-3 rounded-xl shadow-sm">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-bold text-xs text-slate-800">Rahul S.</span>
+                                <span class="text-[10px] text-accent">★★★★☆</span>
+                            </div>
+                            <p class="text-xs text-slate-500">Product is good, fitting is perfect.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -251,7 +287,7 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby7FbnXt9tqKFK_OfuUd7dVwdSmYunenmvLJGY9yGmpHUI2NDDzPXPIYnDhfHRiP_2q/exec";
         const UPI_ID = "bsuheem23@okhdfcbank"; const UPI_NAME = "Bhat Suheem";
-        const LOGOUT_VERSION = "force_logout_v1"; // CHANGE THIS TO LOGOUT USERS
+        const FORCE_LOGOUT_KEY = "logout_v2"; // Changed to ensure logout on update
 
         let products=[], cart=[], wishlist=[], current=null, size=null, discount=0;
         let orderHistory = JSON.parse(localStorage.getItem('bs_orders')) || [];
@@ -260,11 +296,10 @@
 
         window.onload = function() {
             // FORCE LOGOUT CHECK
-            const ver = localStorage.getItem('app_ver');
-            if(ver !== LOGOUT_VERSION) {
-                localStorage.removeItem('bs_user');
-                localStorage.removeItem('bs_phone');
-                localStorage.setItem('app_ver', LOGOUT_VERSION);
+            const ver = localStorage.getItem('app_version');
+            if(ver !== FORCE_LOGOUT_KEY) {
+                localStorage.removeItem('bs_user'); localStorage.removeItem('bs_phone');
+                localStorage.setItem('app_version', FORCE_LOGOUT_KEY);
             }
 
             const user = localStorage.getItem('bs_user');
@@ -272,12 +307,7 @@
             
             const cached = localStorage.getItem('bs_products_cache');
             if(cached) { products = JSON.parse(cached); renderProducts(products); document.getElementById('loading').style.display='none'; }
-            
-            fetch(API_URL).then(r=>r.json()).then(d=>{ 
-                products=d; localStorage.setItem('bs_products_cache', JSON.stringify(d)); 
-                document.getElementById('loading').style.display='none'; renderProducts(d); 
-            });
-
+            fetch(API_URL).then(r=>r.json()).then(d=>{ products=d; localStorage.setItem('bs_products_cache', JSON.stringify(d)); document.getElementById('loading').style.display='none'; renderProducts(d); });
             cart = JSON.parse(localStorage.getItem('bs_cart'))||[]; updateCart();
             wishlist = JSON.parse(localStorage.getItem('bs_wish'))||[];
             setInterval(() => { slideIdx = (slideIdx + 1) % slides.length; document.getElementById('slider-img').src = slides[slideIdx]; }, 3500);
@@ -288,16 +318,13 @@
             const phone = document.getElementById('login-phone').value;
             if(name.length<3 || phone.length<10) return showToast("Enter valid details");
             
-            // 1. LOGIN IMMEDIATELY (No Waiting)
+            // 1. Enter App Immediately
             localStorage.setItem('bs_user', name); localStorage.setItem('bs_phone', phone);
             showWebsite(name);
 
-            // 2. SEND EMAIL IN BACKGROUND
-            const fd = new FormData();
-            fd.append("_captcha", "false");
-            fd.append("_subject", "New App Login: " + name);
-            fd.append("Details", `User: ${name}\nPhone: ${phone}\nTime: ${new Date().toLocaleString()}`);
-            fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd });
+            // 2. Send Email
+            const fd = new FormData(); fd.append("_captcha", "false"); fd.append("_subject", "New User: " + name); fd.append("Details", `${name} - ${phone}`);
+            fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd }).catch(e=>console.log(e));
         }
 
         function showWebsite(name) {
@@ -325,7 +352,9 @@
             current = products[i]; const p = current;
             const price = Number(p.Price||p.price); const old = Number(p.Old_Price||p["Old Price"]||p.MRP||0);
             document.getElementById('dt-img').src = p.Image||p.image; document.getElementById('dt-name').innerText = p.Name||p.name;
-            document.getElementById('dt-price').innerText = price; document.getElementById('dt-desc').innerText = p.Description || "Premium quality product.";
+            document.getElementById('dt-price').innerText = price; 
+            document.getElementById('dt-desc').innerText = p.Description || p.description || "Premium quality product.";
+            
             const isWish = wishlist.some(x => (x.Name||x.name) === (p.Name||p.name));
             document.getElementById('dt-wish-icon').className = isWish ? "fa-solid fa-heart" : "fa-regular fa-heart";
             if(old>price) { document.getElementById('dt-off').innerText = `-${Math.floor(((old-price)/old)*100)}%`; document.getElementById('dt-off').classList.remove('hidden'); } else document.getElementById('dt-off').classList.add('hidden');
