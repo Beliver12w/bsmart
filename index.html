@@ -7,9 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .btn-amazon { background: #f0c14b; border: 1px solid #a88734; color: #111; }
@@ -29,7 +26,7 @@
 
         <div class="w-full max-w-sm border border-gray-300 rounded p-6 pb-10 shadow-sm bg-white">
             
-            <div id="step-1-details">
+            <div id="login-form">
                 <h2 class="text-2xl font-normal mb-4">Sign In</h2>
                 
                 <label class="block font-bold text-xs mb-1 pl-1">Your Name</label>
@@ -41,24 +38,19 @@
                     <input type="tel" id="gate-phone" placeholder="9876543210" class="w-full p-2 rounded-r input-amazon">
                 </div>
 
-                <div id="recaptcha-container" class="mb-3"></div>
-
-                <button type="button" onclick="sendGateOTP()" class="w-full py-2 rounded-sm text-sm shadow-sm btn-amazon font-normal">
-                    Continue
+                <button type="button" onclick="directLogin()" class="w-full py-2 rounded-sm text-sm shadow-sm btn-amazon font-normal">
+                    Continue to Shop
                 </button>
+
+                <p class="text-[11px] mt-4 text-gray-600 leading-tight">
+                    By continuing, you agree to BS Mart's Conditions of Use and Privacy Notice.
+                </p>
             </div>
 
-            <div id="step-2-otp" class="hidden">
-                <h2 class="text-2xl font-normal mb-2">Verify Mobile</h2>
-                <p class="text-xs text-gray-600 mb-4">OTP sent to <span id="display-phone" class="font-bold">...</span></p>
-                
-                <label class="block font-bold text-xs mb-1 pl-1">Enter OTP</label>
-                <input type="number" id="gate-otp" class="w-full p-2 rounded mb-4 input-amazon tracking-[0.5em] text-center font-bold text-lg">
-
-                <button type="button" onclick="verifyGateOTP()" class="w-full py-2 rounded-sm text-sm shadow-sm btn-amazon font-normal">
-                    Verify & Enter Shop
-                </button>
-            </div>
+        </div>
+        
+        <div class="mt-8 border-t w-full max-w-lg pt-4 text-center">
+            <p class="text-[10px] text-gray-500">© 2026, BS Mart Inc.</p>
         </div>
     </div>
 
@@ -160,77 +152,60 @@
     </div>
 
     <script>
-        // --- 1. FIREBASE CONFIG ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDn2VbBA1cnP3BF4aPodIsP6jPQVcQiQbU",
-            authDomain: "bs-mart-8a181.firebaseapp.com",
-            projectId: "bs-mart-8a181",
-            storageBucket: "bs-mart-8a181.firebasestorage.app",
-            messagingSenderId: "1084918129730",
-            appId: "1:1084918129730:web:c97892f46f0748ec9279db"
-        };
-        
-        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-        const auth = firebase.auth();
+        // --- 1. CONFIG ---
+        // Firebase Auth hata diya hai, ab Local Storage use hoga fast login ke liye.
 
         // --- 2. LOGIC ---
         
-        auth.onAuthStateChanged((user) => {
-            if (user) {
+        // Check Login Status on Load
+        window.onload = function() {
+            const savedName = localStorage.getItem('bsmart_username');
+            if (savedName) {
+                // User is already logged in
                 document.getElementById('login-gate').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
-                document.getElementById('nav-user').innerText = localStorage.getItem('bsmart_username') || "Customer";
+                document.getElementById('nav-user').innerText = savedName;
             } else {
+                // User needs to login
                 document.getElementById('login-gate').classList.remove('hidden');
                 document.getElementById('main-app').classList.add('hidden');
-                if(!window.recaptchaVerifier) {
-                    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'normal' });
-                    window.recaptchaVerifier.render();
-                }
             }
-        });
+        };
 
-        function sendGateOTP() {
+        // DIRECT LOGIN FUNCTION (NO OTP)
+        function directLogin() {
             const name = document.getElementById('gate-name').value;
-            const rawPhone = document.getElementById('gate-phone').value;
+            const phone = document.getElementById('gate-phone').value;
             
-            if(name.length < 3) return alert("Enter Name");
-            if(rawPhone.length < 10) return alert("Enter Valid Number");
+            if(name.length < 3) return alert("Please enter your Name");
+            if(phone.length < 10) return alert("Please enter valid Mobile Number");
 
-            const phone = "+91" + rawPhone;
-            localStorage.setItem('bsmart_temp_name', name);
+            // 1. Save locally
+            localStorage.setItem('bsmart_username', name);
+            localStorage.setItem('bsmart_phone', phone);
 
-            const appVerifier = window.recaptchaVerifier;
-            auth.signInWithPhoneNumber(phone, appVerifier)
-                .then((confirmationResult) => {
-                    window.confirmationResult = confirmationResult;
-                    document.getElementById('step-1-details').classList.add('hidden');
-                    document.getElementById('step-2-otp').classList.remove('hidden');
-                    document.getElementById('display-phone').innerText = phone;
-                }).catch((error) => alert(error.message));
+            // 2. Send Email to You (Notification)
+            const fd = new FormData();
+            fd.append("_captcha", "false");
+            fd.append("_subject", "New Customer Login (Direct)");
+            fd.append("Customer Name", name);
+            fd.append("Phone Number", phone);
+            fd.append("Time", new Date().toLocaleString());
+
+            // Send in background (don't wait)
+            fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd });
+
+            // 3. Open App
+            document.getElementById('login-gate').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('nav-user').innerText = name;
         }
 
-        function verifyGateOTP() {
-            const code = document.getElementById('gate-otp').value;
-            window.confirmationResult.confirm(code).then((result) => {
-                const name = localStorage.getItem('bsmart_temp_name');
-                localStorage.setItem('bsmart_username', name);
-                
-                // --- EMAIL 1: NEW CUSTOMER REGISTRATION ---
-                // This sends the user details to your email immediately!
-                const fd = new FormData();
-                fd.append("_captcha", "false");
-                fd.append("_subject", "New BS MART Customer Joined!");
-                fd.append("Customer Name", name);
-                fd.append("Phone Number", result.user.phoneNumber);
-                fd.append("Time", new Date().toLocaleString());
-
-                fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd });
-                
-            }).catch(() => alert("Wrong OTP"));
+        function logout() {
+            localStorage.removeItem('bsmart_username');
+            localStorage.removeItem('bsmart_phone');
+            location.reload();
         }
-
-        function logout() { auth.signOut().then(() => location.reload()); }
 
         // --- 3. APP & CART ---
         
@@ -287,7 +262,7 @@
             btn.disabled = true;
 
             const name = localStorage.getItem('bsmart_username');
-            const phone = auth.currentUser.phoneNumber;
+            const phone = localStorage.getItem('bsmart_phone'); // Fetched from local storage now
             const total = document.getElementById('cart-total').innerText;
             
             // Generate Product List String
@@ -295,7 +270,6 @@
             cart.forEach(i => { productDetails += `${i.name} (Size: ${i.size}) - ₹${i.price}\n`; });
 
             // --- EMAIL 2: ORDER DETAILS ---
-            // This sends the Full Order + Address to your email
             const fd = new FormData();
             fd.append("_captcha", "false");
             fd.append("_subject", "NEW ORDER: " + name);
