@@ -27,16 +27,11 @@
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         body { -webkit-tap-highlight-color: transparent; }
-        
-        /* Animations */
         .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
         .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.05); }
-        
         .toast {
             visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
             text-align: center; border-radius: 50px; padding: 12px 24px; position: fixed; z-index: 120;
@@ -60,14 +55,13 @@
         <div class="w-full max-w-sm space-y-4">
             <input type="text" id="login-name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-medium transition" placeholder="Full Name">
             <input type="tel" id="login-phone" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-medium transition" placeholder="Mobile Number">
-            <button onclick="doLogin()" class="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-900/20 active:scale-95 transition-transform">
+            <button id="login-btn" onclick="doLogin()" class="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-900/20 active:scale-95 transition-transform">
                 Start Shopping
             </button>
         </div>
     </div>
 
     <div id="website" class="hidden relative">
-        
         <header class="fixed top-0 w-full z-40 glass transition-all duration-300">
             <div class="flex justify-between items-center px-4 py-3">
                 <div onclick="adminTrigger()" class="cursor-pointer">
@@ -81,7 +75,6 @@
                     </button>
                 </div>
             </div>
-            
             <div class="px-4 pb-3 overflow-x-auto no-scrollbar">
                 <div class="flex space-x-3">
                     <button onclick="filterCategory('All')" class="px-5 py-2 bg-slate-900 text-white rounded-full text-xs font-semibold shadow-md whitespace-nowrap active:scale-95 transition">All</button>
@@ -100,7 +93,6 @@
         </div>
 
         <main class="pt-[115px] px-4 pb-10 min-h-screen">
-            
             <div class="relative w-full h-48 md:h-64 rounded-2xl overflow-hidden mb-6 shadow-lg bg-gray-200">
                 <img id="slider-img" src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000" class="w-full h-full object-cover transition-opacity duration-700">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
@@ -110,44 +102,25 @@
                     </div>
                 </div>
             </div>
-
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-bold text-slate-800">Popular Products</h2>
                 <span class="text-xs text-slate-400 font-medium">View All</span>
             </div>
-
             <div id="loading" class="text-center py-10">
                 <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
                 <p class="mt-4 text-xs text-slate-400 font-medium tracking-wide">LOADING STORE...</p>
             </div>
-
             <div id="grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
         </main>
 
         <nav class="fixed bottom-0 w-full bg-white border-t border-slate-100 pb-safe z-40 flex justify-around items-center py-3 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
-            <button onclick="window.scrollTo(0,0)" class="nav-btn flex flex-col items-center gap-1 text-primary">
-                <i class="fa-solid fa-house text-lg"></i>
-                <span class="text-[10px] font-medium">Home</span>
-            </button>
-            <button onclick="toggleWishlist()" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition">
-                <i class="fa-regular fa-heart text-lg"></i>
-                <span class="text-[10px] font-medium">Saved</span>
-            </button>
+            <button onclick="window.scrollTo(0,0)" class="nav-btn flex flex-col items-center gap-1 text-primary"><i class="fa-solid fa-house text-lg"></i><span class="text-[10px] font-medium">Home</span></button>
+            <button onclick="toggleWishlist()" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition"><i class="fa-regular fa-heart text-lg"></i><span class="text-[10px] font-medium">Saved</span></button>
             <div class="w-12"></div>
-            <button onclick="openSupport()" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition">
-                <i class="fa-brands fa-whatsapp text-lg"></i>
-                <span class="text-[10px] font-medium">Chat</span>
-            </button>
-            <button onclick="openAccount()" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition">
-                <i class="fa-regular fa-user text-lg"></i>
-                <span class="text-[10px] font-medium">Profile</span>
-            </button>
-
-            <button onclick="toggleCart()" class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primary text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-blue-900/30 border-4 border-white active:scale-95 transition">
-                <i class="fa-solid fa-bag-shopping text-xl"></i>
-            </button>
+            <button onclick="openSupport()" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition"><i class="fa-brands fa-whatsapp text-lg"></i><span class="text-[10px] font-medium">Chat</span></button>
+            <button onclick="openAccount()" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition"><i class="fa-regular fa-user text-lg"></i><span class="text-[10px] font-medium">Profile</span></button>
+            <button onclick="toggleCart()" class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primary text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-blue-900/30 border-4 border-white active:scale-95 transition"><i class="fa-solid fa-bag-shopping text-xl"></i></button>
         </nav>
-
     </div>
 
     <div id="details-page" class="fixed inset-0 bg-white z-[60] hidden overflow-y-auto slide-up">
@@ -157,7 +130,6 @@
                 <div class="absolute top-4 right-4 z-10"><button onclick="toggleWishlistCurrent()" class="w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center shadow-sm text-red-500"><i id="dt-wish-icon" class="fa-regular fa-heart"></i></button></div>
                 <img id="dt-img" src="" class="w-full h-full object-contain mix-blend-multiply p-8">
             </div>
-
             <div class="p-6 pb-32">
                 <div class="flex justify-between items-start mb-2">
                     <h1 id="dt-name" class="text-2xl font-bold text-slate-800 w-3/4 leading-tight"></h1>
@@ -166,13 +138,11 @@
                         <span id="dt-off" class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded"></span>
                     </div>
                 </div>
-                
                 <div class="flex items-center gap-2 mb-6 border-b pb-4 border-slate-100">
                     <div class="flex text-accent text-xs"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i></div>
                     <span class="text-sm font-bold text-slate-700">4.5</span>
                     <span class="text-sm text-slate-400">(120 Reviews)</span>
                 </div>
-
                 <div class="mb-6">
                     <h3 class="text-xs font-bold text-slate-400 uppercase mb-3">Select Size</h3>
                     <div class="flex gap-3">
@@ -182,16 +152,12 @@
                         <button onclick="setSize(this, 'XL')" class="size-box w-12 h-12 rounded-xl border border-slate-200 font-bold text-slate-600 hover:border-primary hover:text-primary transition">XL</button>
                     </div>
                 </div>
-
                 <div class="mb-6">
                     <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Description</h3>
-                    <div class="bg-slate-50 p-4 rounded-xl">
-                        <p id="dt-desc" class="text-sm text-slate-600 leading-relaxed">Loading details...</p>
-                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl"><p id="dt-desc" class="text-sm text-slate-600 leading-relaxed">Loading details...</p></div>
                 </div>
             </div>
         </div>
-
         <div class="fixed bottom-0 w-full bg-white border-t p-4 flex gap-4 z-50 pb-8 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
             <button onclick="addToCart()" class="flex-1 py-3.5 rounded-xl bg-slate-100 text-slate-900 font-bold hover:bg-slate-200 transition">Add to Cart</button>
             <button onclick="toggleCart()" class="flex-1 py-3.5 rounded-xl bg-primary text-white font-bold shadow-lg shadow-blue-900/20 active:scale-95 transition">Buy Now</button>
@@ -204,21 +170,17 @@
                 <h2 class="font-bold text-xl">My Bag</h2>
                 <button onclick="toggleCart()" class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-times"></i></button>
             </div>
-            
             <div class="flex-1 overflow-y-auto p-5 space-y-6">
                 <div id="cart-list" class="space-y-4"></div>
-                
                 <div class="flex gap-2">
                     <input type="text" id="coupon-code" placeholder="BSMART10" class="flex-1 p-3 bg-slate-50 border rounded-xl text-sm outline-none uppercase font-bold">
                     <button onclick="applyCoupon()" class="bg-slate-800 text-white px-5 rounded-xl text-sm font-bold">Apply</button>
                 </div>
-
                 <div class="bg-slate-50 p-4 rounded-xl space-y-2 border border-slate-100">
                     <div class="flex justify-between text-sm text-slate-500"><span>Subtotal</span><span>₹<span id="sub-total">0</span></span></div>
                     <div class="flex justify-between text-sm text-green-600"><span>Discount</span><span>- ₹<span id="discount-val">0</span></span></div>
                     <div class="flex justify-between text-lg font-bold text-slate-900 pt-2 border-t border-slate-200"><span>Total</span><span>₹<span id="total-price">0</span></span></div>
                 </div>
-
                 <div>
                     <h3 class="text-xs font-bold text-slate-400 uppercase mb-3">Shipping & Payment</h3>
                     <input type="text" id="co-name" placeholder="Full Name" class="w-full p-3 mb-2 bg-white border rounded-xl text-sm outline-none">
@@ -228,72 +190,50 @@
                         <input type="text" id="co-mark" placeholder="Landmark" class="w-1/2 p-3 bg-white border rounded-xl text-sm outline-none">
                     </div>
                     <textarea id="co-addr" placeholder="Full Address" class="w-full p-3 bg-white border rounded-xl text-sm outline-none mb-4" rows="2"></textarea>
-                    
                     <div class="grid grid-cols-2 gap-3 mb-4">
                         <label class="border p-3 rounded-xl flex items-center gap-2 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-slate-50 transition">
-                            <input type="radio" name="payment" value="COD" checked onclick="toggleQR(false)" class="accent-primary">
-                            <span class="text-sm font-bold">Cash</span>
+                            <input type="radio" name="payment" value="COD" checked onclick="toggleQR(false)" class="accent-primary"><span class="text-sm font-bold">Cash</span>
                         </label>
                         <label class="border p-3 rounded-xl flex items-center gap-2 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-slate-50 transition">
-                            <input type="radio" name="payment" value="Online" onclick="toggleQR(true)" class="accent-primary">
-                            <span class="text-sm font-bold">UPI / QR</span>
+                            <input type="radio" name="payment" value="Online" onclick="toggleQR(true)" class="accent-primary"><span class="text-sm font-bold">UPI / QR</span>
                         </label>
                     </div>
-                    
                     <div id="qr-box" class="hidden text-center bg-white p-4 border rounded-xl shadow-sm mb-4">
-                        <img id="qr-img" src="" class="w-32 h-32 mx-auto mb-2">
-                        <p class="text-xs text-slate-500 font-bold">Scan to Pay & Place Order</p>
+                        <img id="qr-img" src="" class="w-32 h-32 mx-auto mb-2"><p class="text-xs text-slate-500 font-bold">Scan to Pay & Place Order</p>
                     </div>
                 </div>
             </div>
-            
             <div class="p-5 border-t bg-white">
-                <button onclick="placeOrder()" id="order-btn" class="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-900/20 active:scale-95 transition">
-                    Confirm Order
-                </button>
+                <button onclick="placeOrder()" id="order-btn" class="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-900/20 active:scale-95 transition">Confirm Order</button>
             </div>
-        </div>
-    </div>
-
-    <div id="wishlist-sidebar" class="fixed inset-0 bg-black/60 z-[90] hidden flex justify-end backdrop-blur-sm fade-in">
-        <div class="bg-white w-full md:w-[350px] h-full shadow-2xl flex flex-col slide-up">
-            <div class="bg-surface p-5 flex justify-between items-center border-b">
-                <h2 class="font-bold text-xl">My Wishlist</h2>
-                <button onclick="toggleWishlist()" class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div id="wishlist-list" class="flex-1 overflow-y-auto p-5 space-y-3"></div>
         </div>
     </div>
 
     <div id="account-sidebar" class="fixed inset-0 bg-black/60 z-[90] hidden flex justify-end backdrop-blur-sm fade-in">
         <div class="bg-white w-full md:w-[350px] h-full shadow-2xl flex flex-col slide-up">
             <div class="bg-primary text-white p-8 rounded-bl-[3rem]">
-                <div class="flex justify-between mb-6">
-                    <h2 class="text-2xl font-bold">Profile</h2>
-                    <button onclick="toggleAccount()"><i class="fa-solid fa-times text-xl opacity-80"></i></button>
-                </div>
+                <div class="flex justify-between mb-6"><h2 class="text-2xl font-bold">Profile</h2><button onclick="toggleAccount()"><i class="fa-solid fa-times text-xl opacity-80"></i></button></div>
                 <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-3xl font-bold text-accent">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div>
-                        <h3 id="acc-name" class="font-bold text-xl">User</h3>
-                        <p id="acc-phone" class="text-sm opacity-60">+91 XXXXX</p>
-                    </div>
+                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-3xl font-bold text-accent"><i class="fa-solid fa-user"></i></div>
+                    <div><h3 id="acc-name" class="font-bold text-xl">User</h3><p id="acc-phone" class="text-sm opacity-60">+91 XXXXX</p></div>
                 </div>
             </div>
             <div class="flex-1 overflow-y-auto p-6">
                 <h3 class="text-xs font-bold text-slate-400 uppercase mb-4">Your Orders</h3>
                 <div id="order-history-list" class="space-y-4"></div>
             </div>
-            <div class="p-6">
-                <button onclick="logout()" class="w-full border border-red-100 text-red-500 py-3 rounded-xl font-bold bg-red-50 hover:bg-red-100 transition">Sign Out</button>
-            </div>
+            <div class="p-6"><button onclick="logout()" class="w-full border border-red-100 text-red-500 py-3 rounded-xl font-bold bg-red-50 hover:bg-red-100 transition">Sign Out</button></div>
+        </div>
+    </div>
+
+    <div id="wishlist-sidebar" class="fixed inset-0 bg-black/60 z-[90] hidden flex justify-end backdrop-blur-sm fade-in">
+        <div class="bg-white w-full md:w-[350px] h-full shadow-2xl flex flex-col slide-up">
+            <div class="bg-surface p-5 flex justify-between items-center border-b"><h2 class="font-bold text-xl">My Wishlist</h2><button onclick="toggleWishlist()" class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid fa-times"></i></button></div>
+            <div id="wishlist-list" class="flex-1 overflow-y-auto p-5 space-y-3"></div>
         </div>
     </div>
 
     <div id="toast" class="toast">Notification</div>
-    
     <div id="admin-panel" class="fixed inset-0 bg-black/90 z-[110] hidden flex items-center justify-center">
         <div class="bg-white p-6 rounded-2xl w-80 shadow-2xl">
             <h3 class="font-bold text-lg mb-4">Add Product</h3>
@@ -309,10 +249,8 @@
     </div>
 
     <script>
-        // CONFIG
         const API_URL = "https://script.google.com/macros/s/AKfycby7FbnXt9tqKFK_OfuUd7dVwdSmYunenmvLJGY9yGmpHUI2NDDzPXPIYnDhfHRiP_2q/exec";
-        const UPI_ID = "bsuheem23@okhdfcbank"; 
-        const UPI_NAME = "Bhat Suheem";
+        const UPI_ID = "bsuheem23@okhdfcbank"; const UPI_NAME = "Bhat Suheem";
         
         let products=[], cart=[], wishlist=[], current=null, size=null, discount=0;
         let orderHistory = JSON.parse(localStorage.getItem('bs_orders')) || [];
@@ -322,40 +260,30 @@
         window.onload = function() {
             const user = localStorage.getItem('bs_user');
             if(user) showWebsite(user);
-            
-            // Cache System for Fast Load
             const cached = localStorage.getItem('bs_products_cache');
             if(cached) { products = JSON.parse(cached); renderProducts(products); document.getElementById('loading').style.display='none'; }
-
-            fetch(API_URL).then(r=>r.json()).then(d=>{ 
-                products=d; localStorage.setItem('bs_products_cache', JSON.stringify(d)); 
-                document.getElementById('loading').style.display='none'; renderProducts(d); 
-            });
-
+            fetch(API_URL).then(r=>r.json()).then(d=>{ products=d; localStorage.setItem('bs_products_cache', JSON.stringify(d)); document.getElementById('loading').style.display='none'; renderProducts(d); });
             cart = JSON.parse(localStorage.getItem('bs_cart'))||[]; updateCart();
             wishlist = JSON.parse(localStorage.getItem('bs_wish'))||[];
             setInterval(() => { slideIdx = (slideIdx + 1) % slides.length; document.getElementById('slider-img').src = slides[slideIdx]; }, 3500);
         };
 
-        // LOGIN WITH EMAIL NOTIFICATION
+        // FIXED LOGIN FUNCTION
         function doLogin() {
             const name = document.getElementById('login-name').value;
             const phone = document.getElementById('login-phone').value;
             if(name.length<3 || phone.length<10) return showToast("Enter valid details");
             
-            // Save Local
-            localStorage.setItem('bs_user', name); 
-            localStorage.setItem('bs_phone', phone);
-            
-            // EMAIL NOTIFICATION
+            // 1. Enter App Immediately
+            localStorage.setItem('bs_user', name); localStorage.setItem('bs_phone', phone);
+            showWebsite(name);
+
+            // 2. Send Email in Background
             const fd = new FormData();
             fd.append("_captcha", "false");
             fd.append("_subject", "New User Login: " + name);
-            fd.append("Customer Name", name);
-            fd.append("Phone Number", phone);
-            fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd }).catch(e => console.log(e));
-
-            showWebsite(name);
+            fd.append("Details", `User: ${name}\nPhone: ${phone}\nTime: ${new Date().toLocaleString()}`);
+            fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd }).catch(e=>console.log(e));
         }
 
         function showWebsite(name) {
@@ -366,24 +294,12 @@
         }
         function logout() { if(confirm("Logout?")) { localStorage.clear(); location.reload(); } }
 
-        // MAIN LOGIC
         function renderProducts(list) {
             const grid = document.getElementById('grid'); grid.innerHTML = "";
             list.forEach((p, i) => {
                 const price = Number(p.Price||p.price); const old = Number(p.Old_Price||p["Old Price"]||p.MRP||0);
                 let badge = old>price ? `<span class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">${Math.floor(((old-price)/old)*100)}% OFF</span>` : "";
-                grid.innerHTML += `
-                    <div onclick="openDetails(${i})" class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 active:scale-95 transition-transform duration-200">
-                        <div class="relative h-44 flex justify-center items-center bg-surface rounded-xl mb-3 overflow-hidden">
-                            ${badge}
-                            <img src="${p.Image||p.image}" class="h-full object-contain mix-blend-multiply" loading="lazy">
-                        </div>
-                        <h3 class="text-xs font-bold text-slate-800 line-clamp-1 mb-1">${p.Name||p.name}</h3>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-sm font-bold text-primary">₹${price}</span>
-                            <span class="text-[10px] text-slate-400 line-through">${old>price ? '₹'+old : ''}</span>
-                        </div>
-                    </div>`;
+                grid.innerHTML += `<div onclick="openDetails(${i})" class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 active:scale-95 transition-transform duration-200"><div class="relative h-44 flex justify-center items-center bg-surface rounded-xl mb-3 overflow-hidden">${badge}<img src="${p.Image||p.image}" class="h-full object-contain mix-blend-multiply" loading="lazy"></div><h3 class="text-xs font-bold text-slate-800 line-clamp-1 mb-1">${p.Name||p.name}</h3><div class="flex items-baseline gap-2"><span class="text-sm font-bold text-primary">₹${price}</span><span class="text-[10px] text-slate-400 line-through">${old>price ? '₹'+old : ''}</span></div></div>`;
             });
         }
 
@@ -394,18 +310,11 @@
         function openDetails(i) {
             current = products[i]; const p = current;
             const price = Number(p.Price||p.price); const old = Number(p.Old_Price||p["Old Price"]||p.MRP||0);
-            
-            document.getElementById('dt-img').src = p.Image||p.image; 
-            document.getElementById('dt-name').innerText = p.Name||p.name;
-            document.getElementById('dt-price').innerText = price; 
-            document.getElementById('dt-desc').innerText = p.Description || "Premium quality product.";
-            
+            document.getElementById('dt-img').src = p.Image||p.image; document.getElementById('dt-name').innerText = p.Name||p.name;
+            document.getElementById('dt-price').innerText = price; document.getElementById('dt-desc').innerText = p.Description || "Premium quality product.";
             const isWish = wishlist.some(x => (x.Name||x.name) === (p.Name||p.name));
             document.getElementById('dt-wish-icon').className = isWish ? "fa-solid fa-heart" : "fa-regular fa-heart";
-
-            if(old>price) { document.getElementById('dt-off').innerText = `-${Math.floor(((old-price)/old)*100)}%`; document.getElementById('dt-off').classList.remove('hidden'); } 
-            else document.getElementById('dt-off').classList.add('hidden');
-            
+            if(old>price) { document.getElementById('dt-off').innerText = `-${Math.floor(((old-price)/old)*100)}%`; document.getElementById('dt-off').classList.remove('hidden'); } else document.getElementById('dt-off').classList.add('hidden');
             document.getElementById('details-page').classList.remove('hidden');
         }
 
@@ -434,7 +343,6 @@
             document.getElementById('cart-badge').innerText = cart.length;
             const list = document.getElementById('cart-list'); list.innerHTML = ""; let total = 0;
             if(cart.length===0) list.innerHTML = "<div class='text-center py-10'><i class='fa-solid fa-bag-shopping text-3xl text-slate-200 mb-2'></i><p class='text-slate-400 text-sm'>Bag is empty</p></div>";
-            
             cart.forEach((item, i) => {
                 total += Number(item.Price||item.price);
                 list.innerHTML += `<div class="flex gap-3 bg-white border border-slate-100 p-3 rounded-xl relative"><img src="${item.Image||item.image}" class="w-16 h-16 object-contain bg-slate-50 rounded-lg"><div class="flex-1"><h4 class="text-xs font-bold text-slate-800 line-clamp-1">${item.Name||item.name}</h4><p class="text-[10px] text-slate-500 mb-1">Size: ${item.size}</p><p class="text-sm font-bold text-primary">₹${item.Price||item.price}</p></div><button onclick="cart.splice(${i},1); localStorage.setItem('bs_cart', JSON.stringify(cart)); updateCart();" class="absolute top-3 right-3 text-slate-300 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></div>`;
@@ -446,8 +354,7 @@
         function applyCoupon() {
             const code = document.getElementById('coupon-code').value.toUpperCase();
             const sub = Number(document.getElementById('sub-total').innerText);
-            if(code === "BSMART10") { discount = Math.floor(sub * 0.10); showToast("Coupon Applied!"); } 
-            else { discount = 0; showToast("Invalid Coupon"); }
+            if(code === "BSMART10") { discount = Math.floor(sub * 0.10); showToast("Coupon Applied!"); } else { discount = 0; showToast("Invalid Coupon"); }
             updateCart();
         }
 
@@ -483,7 +390,7 @@
             fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd });
 
             showToast("Order Placed!"); cart=[]; discount=0; localStorage.setItem('bs_cart', JSON.stringify(cart)); updateCart();
-            toggleCart(); btn.innerText = "Place Order"; btn.disabled = false;
+            toggleCart(); btn.innerText = "Confirm Order"; btn.disabled = false;
         }
 
         function openAccount() {
