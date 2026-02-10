@@ -20,7 +20,7 @@
     <div id="login-screen" class="fixed inset-0 bg-white z-[100] flex flex-col items-center pt-20">
         <div class="text-center mb-8">
             <span class="text-4xl font-bold tracking-tighter">BS <span class="text-[#febd69]">MART</span></span>
-            <span class="text-xs text-gray-500 block">India's Best Store</span>
+            <span class="text-xs text-gray-500 block">India's Best Online Store</span>
         </div>
         <div class="w-full max-w-sm border border-gray-300 rounded p-6 shadow-lg bg-white">
             <h2 class="text-2xl font-normal mb-4">Sign In</h2>
@@ -31,20 +31,22 @@
                 <span class="bg-gray-100 p-2 border border-r-0 border-gray-300 rounded-l text-gray-600">+91</span>
                 <input type="tel" id="login-phone" placeholder="9999999999" class="w-full p-2 rounded-r input-box">
             </div>
-            <button onclick="doLogin()" class="w-full py-2 rounded shadow-sm btn-primary font-bold">Continue</button>
+            <button onclick="doLogin()" class="w-full py-2 rounded shadow-sm btn-primary font-bold">Start Shopping</button>
         </div>
     </div>
 
     <div id="website" class="hidden min-h-screen pb-20">
+        
         <nav class="bg-[#131921] text-white sticky top-0 z-50 shadow-md">
             <div class="flex justify-between items-center px-4 py-3">
                 <div onclick="adminTrigger()" class="cursor-pointer select-none">
                     <span class="text-2xl font-bold tracking-tighter">BS <span class="text-[#febd69]">MART</span></span>
                 </div>
+                
                 <div class="flex items-center gap-4">
-                    <div class="text-right leading-none">
+                    <div onclick="openAccount()" class="text-right leading-none cursor-pointer hover:opacity-80">
                         <div class="text-[10px] text-gray-300">Hello, <span id="user-display">User</span></div>
-                        <div class="text-sm font-bold">Account</div>
+                        <div class="text-sm font-bold">My Orders</div>
                     </div>
                     <div onclick="toggleCart()" class="relative cursor-pointer">
                         <i class="fa-solid fa-cart-shopping text-3xl"></i>
@@ -52,13 +54,31 @@
                     </div>
                 </div>
             </div>
-            <div class="px-3 pb-3">
+            
+            <div class="px-3 pb-2">
                 <div class="flex bg-white rounded h-10 overflow-hidden">
                     <input type="text" id="search-inp" onkeyup="searchProduct()" placeholder="Search BS MART..." class="w-full px-4 outline-none text-gray-700">
                     <button class="bg-[#febd69] w-12 flex items-center justify-center text-black text-lg"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
             </div>
+
+            <div class="bg-[#232f3e] pb-2 overflow-x-auto no-scrollbar">
+                <div class="flex px-4 space-x-5 text-sm font-medium text-white min-w-max">
+                    <span onclick="filterCategory('All')" class="cursor-pointer hover:text-[#febd69] border-b-2 border-transparent hover:border-[#febd69]">All</span>
+                    <span onclick="filterCategory('Mens Wear')" class="cursor-pointer hover:text-[#febd69] border-b-2 border-transparent hover:border-[#febd69]">Men's Fashion</span>
+                    <span onclick="filterCategory('Womens')" class="cursor-pointer hover:text-[#febd69] border-b-2 border-transparent hover:border-[#febd69]">Women's Fashion</span>
+                    <span onclick="filterCategory('Electronics')" class="cursor-pointer hover:text-[#febd69] border-b-2 border-transparent hover:border-[#febd69]">Electronics</span>
+                </div>
+            </div>
         </nav>
+
+        <div class="bg-white border-b p-4 mb-2 text-center shadow-sm">
+            <h1 class="text-xl font-bold text-[#232f3e] mb-1">Welcome to BS MART</h1>
+            <p class="text-xs text-gray-600 max-w-lg mx-auto leading-relaxed">
+                Shop the latest trends in <span class="text-[#febd69] font-bold">Fashion & Electronics</span>. 
+                Fast delivery, easy returns, and secure payments.
+            </p>
+        </div>
 
         <div id="loading" class="text-center py-20">
             <i class="fa-solid fa-spinner fa-spin text-4xl text-[#232f3e]"></i>
@@ -88,7 +108,7 @@
             </div>
 
             <div class="mb-5 border-t pt-3">
-                <h3 class="font-bold text-sm mb-2 text-[#131921]">Description</h3>
+                <h3 class="font-bold text-sm mb-2">Description</h3>
                 <p id="dt-desc" class="text-sm text-gray-600 bg-gray-50 p-3 rounded border leading-relaxed">Loading...</p>
             </div>
 
@@ -103,23 +123,15 @@
             </div>
 
             <div class="mb-5 border-t pt-3">
-                <h3 class="font-bold text-sm mb-3">Customer Reviews</h3>
+                <h3 class="font-bold text-sm mb-3">Reviews</h3>
                 <div class="space-y-3">
                     <div class="bg-gray-50 p-3 rounded border">
-                        <div class="flex items-center gap-2 mb-1">
-                            <i class="fa-solid fa-user-circle text-gray-400"></i>
-                            <span class="font-bold text-xs">Verified Customer</span>
-                        </div>
                         <div class="text-yellow-500 text-xs mb-1">★★★★★</div>
-                        <p class="text-xs text-gray-600">Amazing product quality! Delivery was very fast.</p>
+                        <p class="text-xs text-gray-600">Great quality product!</p>
                     </div>
                     <div class="bg-gray-50 p-3 rounded border">
-                        <div class="flex items-center gap-2 mb-1">
-                            <i class="fa-solid fa-user-circle text-gray-400"></i>
-                            <span class="font-bold text-xs">Rahul S.</span>
-                        </div>
                         <div class="text-yellow-500 text-xs mb-1">★★★★☆</div>
-                        <p class="text-xs text-gray-600">Value for money. Fits perfectly.</p>
+                        <p class="text-xs text-gray-600">Fast delivery.</p>
                     </div>
                 </div>
             </div>
@@ -127,6 +139,26 @@
             <div class="fixed bottom-0 left-0 right-0 bg-white p-3 flex gap-2 shadow-lg border-t">
                 <button onclick="addToCart()" class="flex-1 bg-[#fffae6] border border-[#ffd814] py-3 rounded-full font-bold text-black">Add to Cart</button>
                 <button onclick="toggleCart()" class="flex-1 btn-primary py-3 rounded-full font-bold text-black">Buy Now</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="account-sidebar" class="fixed inset-0 bg-black bg-opacity-50 z-[70] hidden flex justify-end">
+        <div class="bg-white w-full md:w-96 h-full shadow-2xl flex flex-col">
+            <div class="bg-[#232f3e] text-white p-4 flex justify-between items-center">
+                <h2 class="font-bold">My Account</h2>
+                <button onclick="toggleAccount()"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            
+            <div class="p-4 bg-gray-50 border-b">
+                <h3 id="acc-name" class="font-bold text-lg">User</h3>
+                <p id="acc-phone" class="text-sm text-gray-500">+91 XXXXX XXXXX</p>
+                <button onclick="logout()" class="mt-3 text-red-600 text-xs font-bold border border-red-200 px-3 py-1 rounded bg-white">Sign Out</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 bg-white">
+                <h3 class="font-bold text-md mb-4 border-b pb-2">Your Orders</h3>
+                <div id="order-history-list" class="space-y-4"></div>
             </div>
         </div>
     </div>
@@ -142,34 +174,28 @@
                 <div id="cart-list" class="space-y-2"></div>
                 <div class="text-right font-bold text-lg text-[#B12704] border-t pt-2">Total: ₹<span id="total-price">0</span></div>
 
-                <h3 class="font-bold text-md mt-4 border-b pb-1">Delivery Details</h3>
-                
+                <h3 class="font-bold text-md mt-4 border-b pb-1">Address</h3>
                 <input type="text" id="co-name" placeholder="Full Name" class="w-full p-2 border rounded text-sm mb-2 input-box">
-                <input type="tel" id="co-phone" placeholder="Mobile Number" class="w-full p-2 border rounded text-sm mb-2 input-box">
-                
+                <input type="tel" id="co-phone" placeholder="Mobile" class="w-full p-2 border rounded text-sm mb-2 input-box">
                 <div class="flex gap-2">
                     <input type="number" id="co-pin" placeholder="Pincode" class="w-full p-2 border rounded text-sm mb-2 input-box">
                     <input type="text" id="co-mark" placeholder="Landmark" class="w-full p-2 border rounded text-sm mb-2 input-box">
                 </div>
-                
-                <textarea id="co-addr" class="w-full border p-2 text-sm rounded mb-2 input-box" rows="3" placeholder="Full Address (House No, Street, Area)"></textarea>
+                <textarea id="co-addr" class="w-full border p-2 text-sm rounded mb-2 input-box" rows="3" placeholder="Full Address"></textarea>
 
-                <h3 class="font-bold text-md mt-4 border-b pb-1">Payment Method</h3>
-                
+                <h3 class="font-bold text-md mt-4 border-b pb-1">Payment</h3>
                 <label class="flex items-center gap-2 p-3 bg-white border rounded cursor-pointer mb-2">
                     <input type="radio" name="payment" value="COD" checked onclick="toggleQR(false)" class="accent-[#e77600] w-4 h-4">
-                    <span class="font-bold text-sm">Cash on Delivery (COD)</span>
+                    <span class="font-bold text-sm">Cash on Delivery</span>
                 </label>
-                
                 <label class="flex items-center gap-2 p-3 bg-white border rounded cursor-pointer mb-2">
                     <input type="radio" name="payment" value="Online" onclick="toggleQR(true)" class="accent-[#e77600] w-4 h-4">
-                    <span class="font-bold text-sm">Pay Online (UPI / QR)</span>
+                    <span class="font-bold text-sm">Online (UPI / QR)</span>
                 </label>
 
                 <div id="qr-box" class="hidden text-center bg-white p-4 border rounded shadow-inner">
-                    <p class="text-xs font-bold text-gray-500 mb-2">Scan to Pay via UPI</p>
                     <img id="qr-img" src="" class="w-40 h-40 mx-auto border p-1">
-                    <p class="text-xs text-red-500 mt-2 font-bold">Pay & Click "Place Order"</p>
+                    <p class="text-xs text-red-500 mt-2 font-bold">Pay & Place Order</p>
                 </div>
             </div>
             
@@ -194,12 +220,11 @@
     </div>
 
     <script>
-        // CONFIG
         const API = "https://script.google.com/macros/s/AKfycby7FbnXt9tqKFK_OfuUd7dVwdSmYunenmvLJGY9yGmpHUI2NDDzPXPIYnDhfHRiP_2q/exec";
-        const UPI_ID = "bsuheem23@okhdfcbank"; // YOUR UPI
-        const UPI_NAME = "Bhat Suheem";
+        const UPI_ID = "bsuheem23@okhdfcbank"; const UPI_NAME = "Bhat Suheem";
 
         let products=[], cart=[], current=null, size=null;
+        let orderHistory = JSON.parse(localStorage.getItem('bs_orders')) || [];
 
         window.onload = function() {
             const user = localStorage.getItem('bs_user');
@@ -213,7 +238,6 @@
             const phone = document.getElementById('login-phone').value;
             if(name.length<3 || phone.length<10) return alert("Invalid Details");
             localStorage.setItem('bs_user', name); localStorage.setItem('bs_phone', phone);
-            sendEmail("New Login", `User: ${name}\nPhone: ${phone}`);
             showWebsite(name);
         }
 
@@ -225,6 +249,24 @@
             document.getElementById('co-phone').value = localStorage.getItem('bs_phone');
         }
 
+        function openAccount() {
+            document.getElementById('acc-name').innerText = localStorage.getItem('bs_user');
+            document.getElementById('acc-phone').innerText = localStorage.getItem('bs_phone');
+            renderOrderHistory();
+            document.getElementById('account-sidebar').classList.remove('hidden');
+        }
+        function toggleAccount() { document.getElementById('account-sidebar').classList.add('hidden'); }
+        
+        function renderOrderHistory() {
+            const list = document.getElementById('order-history-list'); list.innerHTML = "";
+            if(orderHistory.length === 0) return list.innerHTML = '<p class="text-center text-gray-400 text-xs mt-4">No orders.</p>';
+            orderHistory.slice().reverse().forEach(ord => {
+                list.innerHTML += `<div class="bg-white border rounded p-3 shadow-sm"><div class="flex justify-between border-b pb-2 mb-2"><span class="text-xs font-bold text-gray-500">${ord.date}</span><span class="text-xs font-bold text-green-600">${ord.status}</span></div><p class="text-sm font-bold line-clamp-2">${ord.items}</p><div class="flex justify-between mt-2 text-xs"><span class="text-gray-500">Total:</span><span class="font-bold text-[#B12704]">₹${ord.total}</span></div></div>`;
+            });
+        }
+
+        function logout() { if(confirm("Sign out?")) { localStorage.clear(); location.reload(); } }
+
         function renderProducts(list) {
             const grid = document.getElementById('grid'); grid.innerHTML = "";
             list.forEach((p, i) => {
@@ -234,13 +276,17 @@
             });
         }
 
+        function filterCategory(cat) {
+            if(cat === 'All') renderProducts(products);
+            else renderProducts(products.filter(p => (p.Category||p.category) === cat));
+        }
+
         function openDetails(i) {
             current = products[i]; const p = current;
             const price = Number(p.Price||p.price); const old = Number(p.Old_Price||p["Old Price"]||p.MRP||0);
             document.getElementById('dt-img').src = p.Image||p.image; document.getElementById('dt-name').innerText = p.Name||p.name;
             document.getElementById('dt-price').innerText = price;
-            // Restore Description
-            document.getElementById('dt-desc').innerText = p.Description || p.description || "No description available.";
+            document.getElementById('dt-desc').innerText = p.Description || p.description || "No description.";
             
             if(old>price) {
                 document.getElementById('dt-badge').innerText=`${Math.floor(((old-price)/old)*100)}% OFF`; document.getElementById('dt-badge').classList.remove('hidden');
@@ -271,13 +317,12 @@
             if(show) {
                 const total = document.getElementById('total-price').innerText;
                 const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${total}&cu=INR`;
-                document.getElementById('qr-img').src = qrUrl;
-                box.classList.remove('hidden');
+                document.getElementById('qr-img').src = qrUrl; box.classList.remove('hidden');
             } else { box.classList.add('hidden'); }
         }
 
         function placeOrder() {
-            if(cart.length===0) return alert("Cart Empty");
+            if(cart.length===0) return alert("Empty Cart");
             const name = document.getElementById('co-name').value;
             const phone = document.getElementById('co-phone').value;
             const pin = document.getElementById('co-pin').value;
@@ -285,23 +330,22 @@
             const addr = document.getElementById('co-addr').value;
             const pay = document.querySelector('input[name="payment"]:checked').value;
 
-            if(!name || !phone || !pin || !mark || !addr) return alert("Fill all details!");
+            if(!name || !phone || !pin || !mark || !addr) return alert("Fill all details");
             
             const btn = document.getElementById('order-btn'); btn.innerText = "Processing..."; btn.disabled = true;
-            let items = ""; cart.forEach(i => items += `${i.Name||i.name} (${i.size}) - ₹${i.Price||i.price}\n`);
+            let items = ""; let summary = ""; cart.forEach(i => { items += `${i.Name||i.name} (${i.size}) - ₹${i.Price||i.price}\n`; summary += `${i.Name||i.name}, `; });
             const total = document.getElementById('total-price').innerText;
 
-            const msg = `NEW ORDER\n\nName: ${name}\nPhone: ${phone}\nPin: ${pin}\nLandmark: ${mark}\nAddress: ${addr}\n\nPay Mode: ${pay}\nTotal: ₹${total}\n\nItems:\n${items}`;
-            sendEmail("New Order - BS MART", msg);
+            const newOrder = { date: new Date().toLocaleDateString(), items: summary, total: total, status: "Placed" };
+            orderHistory.push(newOrder); localStorage.setItem('bs_orders', JSON.stringify(orderHistory));
+
+            const msg = `NEW ORDER\n\nName: ${name}\nPhone: ${phone}\nPin: ${pin}\nLandmark: ${mark}\nAddress: ${addr}\n\nMode: ${pay}\nTotal: ₹${total}\n\nItems:\n${items}`;
+            const fd = new FormData(); fd.append("_captcha", "false"); fd.append("_subject", "New Order"); fd.append("Details", msg);
+            fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd });
             
             alert("Order Placed Successfully!");
             cart=[]; localStorage.setItem('bs_cart', JSON.stringify(cart)); updateCart();
             toggleCart(); btn.innerText = "Place Order"; btn.disabled = false;
-        }
-
-        function sendEmail(sub, body) {
-            const fd = new FormData(); fd.append("_captcha", "false"); fd.append("_subject", sub); fd.append("Details", body);
-            fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd });
         }
 
         function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('hidden'); }
