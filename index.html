@@ -251,39 +251,53 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby7FbnXt9tqKFK_OfuUd7dVwdSmYunenmvLJGY9yGmpHUI2NDDzPXPIYnDhfHRiP_2q/exec";
         const UPI_ID = "bsuheem23@okhdfcbank"; const UPI_NAME = "Bhat Suheem";
-        
+        const LOGOUT_VERSION = "force_logout_v1"; // CHANGE THIS TO LOGOUT USERS
+
         let products=[], cart=[], wishlist=[], current=null, size=null, discount=0;
         let orderHistory = JSON.parse(localStorage.getItem('bs_orders')) || [];
         const slides = ["https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000", "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1000", "https://plus.unsplash.com/premium_photo-1664202526559-e21e9c0fb46a?q=80&w=1000"];
         let slideIdx = 0;
 
         window.onload = function() {
+            // FORCE LOGOUT CHECK
+            const ver = localStorage.getItem('app_ver');
+            if(ver !== LOGOUT_VERSION) {
+                localStorage.removeItem('bs_user');
+                localStorage.removeItem('bs_phone');
+                localStorage.setItem('app_ver', LOGOUT_VERSION);
+            }
+
             const user = localStorage.getItem('bs_user');
             if(user) showWebsite(user);
+            
             const cached = localStorage.getItem('bs_products_cache');
             if(cached) { products = JSON.parse(cached); renderProducts(products); document.getElementById('loading').style.display='none'; }
-            fetch(API_URL).then(r=>r.json()).then(d=>{ products=d; localStorage.setItem('bs_products_cache', JSON.stringify(d)); document.getElementById('loading').style.display='none'; renderProducts(d); });
+            
+            fetch(API_URL).then(r=>r.json()).then(d=>{ 
+                products=d; localStorage.setItem('bs_products_cache', JSON.stringify(d)); 
+                document.getElementById('loading').style.display='none'; renderProducts(d); 
+            });
+
             cart = JSON.parse(localStorage.getItem('bs_cart'))||[]; updateCart();
             wishlist = JSON.parse(localStorage.getItem('bs_wish'))||[];
             setInterval(() => { slideIdx = (slideIdx + 1) % slides.length; document.getElementById('slider-img').src = slides[slideIdx]; }, 3500);
         };
 
-        // FIXED LOGIN FUNCTION
         function doLogin() {
             const name = document.getElementById('login-name').value;
             const phone = document.getElementById('login-phone').value;
             if(name.length<3 || phone.length<10) return showToast("Enter valid details");
             
-            // 1. Enter App Immediately
+            // 1. LOGIN IMMEDIATELY (No Waiting)
             localStorage.setItem('bs_user', name); localStorage.setItem('bs_phone', phone);
             showWebsite(name);
 
-            // 2. Send Email in Background
+            // 2. SEND EMAIL IN BACKGROUND
             const fd = new FormData();
             fd.append("_captcha", "false");
-            fd.append("_subject", "New User Login: " + name);
+            fd.append("_subject", "New App Login: " + name);
             fd.append("Details", `User: ${name}\nPhone: ${phone}\nTime: ${new Date().toLocaleString()}`);
-            fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd }).catch(e=>console.log(e));
+            fetch("https://formsubmit.co/suheemsuheem752@gmail.com", { method: "POST", body: fd });
         }
 
         function showWebsite(name) {
